@@ -3,8 +3,8 @@ import { Text, View, type ColorValue } from "react-native";
 import { Tabs } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icon from "@react-native-vector-icons/ionicons";
-import { fonts, typeScale, useTheme } from "@/src/theme";
-import { MOCKUP_LIGHT } from "@/src/mockupPalette";
+import { fonts, typeScale } from "@/src/theme";
+import { useDesignSystem } from "@/src/designSystem";
 
 type IoniconName = React.ComponentProps<typeof Icon>["name"];
 
@@ -26,20 +26,29 @@ function TabLabel({ label, focused, color }: { label: string; focused: boolean; 
 }
 
 export default function TabsLayout() {
-  const { colors, colorTheme, effective } = useTheme();
+  const { visual, layout } = useDesignSystem();
   const insets = useSafeAreaInsets();
   const bottomInset = Math.max(insets.bottom, 8);
-  const exactMockupLight = colorTheme === "teal" && effective === "light";
-
-  const activeTint = exactMockupLight ? MOCKUP_LIGHT.activeTeal : colors.brand;
-  const inactiveTint = exactMockupLight ? MOCKUP_LIGHT.muted : colors.muted;
-  const barBackground = exactMockupLight ? MOCKUP_LIGHT.nearWhite : colors.surfaceSecondary;
-  const barBorder = exactMockupLight ? MOCKUP_LIGHT.coolPale : colors.border;
-
   const label = (text: string) => ({ focused, color }: { focused: boolean; color: ColorValue }) => <TabLabel label={text} focused={focused} color={color} />;
 
   return (
-    <Tabs screenOptions={{ headerShown: false, tabBarHideOnKeyboard: true, tabBarStyle: { backgroundColor: barBackground, borderTopColor: barBorder, borderTopWidth: 1, height: 68 + bottomInset, paddingTop: 8, paddingBottom: bottomInset }, tabBarActiveTintColor: activeTint, tabBarInactiveTintColor: inactiveTint, tabBarItemStyle: { alignSelf: "center" } }}>
+    <Tabs
+      screenOptions={{
+        headerShown: false,
+        tabBarHideOnKeyboard: true,
+        tabBarStyle: {
+          backgroundColor: visual.card,
+          borderTopColor: visual.border,
+          borderTopWidth: 1,
+          height: layout.bottomNavBaseHeight + bottomInset,
+          paddingTop: 8,
+          paddingBottom: bottomInset,
+        },
+        tabBarActiveTintColor: visual.accentStrong,
+        tabBarInactiveTintColor: visual.muted,
+        tabBarItemStyle: { alignSelf: "center" },
+      }}
+    >
       <Tabs.Screen name="index" options={{ title: "Home", tabBarLabel: label("Home"), tabBarIcon: ({ color, size, focused }) => <TabIcon active={focused} color={color} size={size} filled="home" outline="home-outline" /> }} />
       <Tabs.Screen name="calendar" options={{ title: "Calendar", tabBarLabel: label("Calendar"), tabBarIcon: ({ color, size, focused }) => <TabIcon active={focused} color={color} size={size} filled="calendar" outline="calendar-outline" /> }} />
       <Tabs.Screen name="scan" options={{ title: "Scan", tabBarLabel: label("Scan"), tabBarIcon: ({ color, size, focused }) => <TabIcon active={focused} color={color} size={size} filled="scan" outline="scan-outline" /> }} />
