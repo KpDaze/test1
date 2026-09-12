@@ -1,0 +1,37 @@
+# dependencies
+node_modules/
+
+# Expo
+.expo/
+.metro-cache/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native/build
+android/
+ios/
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# local/private
+.DS_Store
+.env*
+*.db
+*.sqlite
+*.sqlite3
+*.backup
+*.bak
+
+# typescript
+*.tsbuildinfo

@@ -1,0 +1,26 @@
+export const MOCKUP_LIGHT = {
+  background: "#F5FAFD",
+  nearWhite: "#F8FDFC",
+  coolPale: "#E5F1F4",
+  paleBlueGrey: "#E8F0F3",
+  paleAqua: "#E1F3F2",
+  teal: "#41A299",
+  activeTeal: "#0A4B53",
+  tealMid: "#317C82",
+  steelBlue: "#407893",
+  navy: "#112130",
+  navyDeep: "#022E40",
+  navyDarkest: "#060A24",
+  muted: "#6E7A83",
+  mutedSoft: "#808E9C",
+  daySurface: "#EFFAEF",
+  dayAccent: "#839967",
+  nightSurface: "#F3EDFD",
+  nightAccent: "#755CB0",
+  houseSurface: "#E2F4FE",
+  houseAccent: "#116D98",
+  red: "#E71B24",
+  yellow: "#F6BE47",
+} as const;
+
+export type MockupLightColor = keyof typeof MOCKUP_LIGHT;
