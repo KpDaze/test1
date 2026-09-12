@@ -1,0 +1,12 @@
+name: Issue runner probe
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Echo
+        run: echo "issue-runner-ok"
