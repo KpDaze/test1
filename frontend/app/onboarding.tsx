@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import Icon from "@react-native-vector-icons/ionicons";
 import { api } from "@/src/api";
-import { useTheme, radius, type Palette } from "@/src/theme";
+import { useTheme, radius, type Palette, fonts, typeScale } from "@/src/theme";
 import { Pressable } from "@/src/components/FeedbackPressable";
 import { ensureNotificationPermission } from "@/src/notifications";
 
@@ -87,28 +87,28 @@ function makeStyles(colors: Palette) {
     logoMark: { width: 54, height: 54, borderRadius: 18, backgroundColor: colors.brandTertiary, position: "relative", alignItems: "center", justifyContent: "center", transform: [{ rotate: "-7deg" }] },
     logoHead: { position: "absolute", top: 9, width: 11, height: 11, borderRadius: 6, backgroundColor: colors.brand },
     logoHeart: { marginTop: 12 },
-    brandName: { color: colors.onSurface, fontSize: 30, fontWeight: "900", letterSpacing: -1.1 },
-    tagline: { color: colors.brand, fontSize: 8, fontWeight: "900", letterSpacing: 1.45, marginTop: 1 },
+    brandName: { fontFamily: fonts.displayBold, ...typeScale.wordmark, color: colors.onSurface },
+    tagline: { fontFamily: fonts.textBold, ...typeScale.micro, color: colors.brand, marginTop: 1 },
     progressRow: { flexDirection: "row", gap: 7, marginBottom: 9 },
     progressBar: { flex: 1, height: 4, borderRadius: 2, backgroundColor: colors.surfaceTertiary },
     progressActive: { backgroundColor: colors.brand },
-    stepText: { color: colors.brand, fontSize: 9, fontWeight: "900", letterSpacing: 1.4, marginBottom: 7 },
-    title: { color: colors.onSurface, fontSize: 30, lineHeight: 33, fontWeight: "900", letterSpacing: -0.8 },
-    subtitle: { color: colors.muted, fontSize: 13, lineHeight: 19, marginTop: 5, marginBottom: 22 },
+    stepText: { fontFamily: fonts.textBold, ...typeScale.eyebrow, color: colors.brand, marginBottom: 7 },
+    title: { fontFamily: fonts.displayBold, ...typeScale.screenTitle, color: colors.onSurface },
+    subtitle: { fontFamily: fonts.text, ...typeScale.body, color: colors.muted, marginTop: 5, marginBottom: 22 },
     card: { backgroundColor: colors.surfaceSecondary, borderWidth: 1, borderColor: colors.border, borderRadius: 20, padding: 17 },
     cardHeading: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 17 },
     iconCircle: { width: 42, height: 42, borderRadius: 21, backgroundColor: colors.brandTertiary, alignItems: "center", justifyContent: "center" },
-    cardEyebrow: { color: colors.brand, fontSize: 9, fontWeight: "900", letterSpacing: 1.3 },
-    cardTitle: { color: colors.onSurface, fontSize: 16, fontWeight: "900", marginTop: 2 },
-    label: { color: colors.onSurfaceSecondary, fontSize: 11, fontWeight: "800", marginBottom: 7 },
+    cardEyebrow: { fontFamily: fonts.textBold, ...typeScale.eyebrow, color: colors.brand },
+    cardTitle: { fontFamily: fonts.displayBold, ...typeScale.cardTitle, color: colors.onSurface, marginTop: 2 },
+    label: { fontFamily: fonts.textBold, ...typeScale.label, color: colors.onSurfaceSecondary, marginBottom: 7 },
     optional: { color: colors.muted, fontWeight: "600" },
-    input: { backgroundColor: colors.surface, color: colors.onSurface, borderWidth: 1, borderColor: colors.border, borderRadius: 13, paddingHorizontal: 13, paddingVertical: 13, fontSize: 15 },
+    input: { fontFamily: fonts.text, ...typeScale.input, backgroundColor: colors.surface, color: colors.onSurface, borderWidth: 1, borderColor: colors.border, borderRadius: 13, paddingHorizontal: 13, paddingVertical: 13 },
     primaryButton: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, backgroundColor: colors.brand, borderRadius: 13, paddingVertical: 14, marginTop: 18 },
-    primaryText: { color: colors.onBrandPrimary, fontSize: 14, fontWeight: "900" },
+    primaryText: { fontFamily: fonts.textBold, ...typeScale.button, color: colors.onBrandPrimary },
     disabled: { opacity: 0.4 },
     backButton: { flexDirection: "row", alignItems: "center", justifyContent: "center", marginTop: 13, paddingVertical: 7 },
-    backText: { color: colors.brand, fontSize: 12, fontWeight: "800" },
+    backText: { fontFamily: fonts.textBold, ...typeScale.action, color: colors.brand },
     localNote: { flexDirection: "row", alignItems: "center", gap: 7, marginTop: 18, paddingHorizontal: 5 },
-    localText: { color: colors.muted, fontSize: 10, lineHeight: 14, flex: 1 },
+    localText: { fontFamily: fonts.text, ...typeScale.caption, color: colors.muted, flex: 1 },
   });
 }
