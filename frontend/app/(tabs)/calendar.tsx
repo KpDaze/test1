@@ -4,8 +4,8 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icon from "@react-native-vector-icons/ionicons";
 import { api, Shift, Profile } from "@/src/api";
-import { useTheme, spacing, radius, type Palette } from "@/src/theme";
-import { MOCKUP_LIGHT } from "@/src/mockupPalette";
+import { spacing, radius, type Palette } from "@/src/theme";
+import { useDesignSystem } from "@/src/designSystem";
 import { Pressable } from "@/src/components/FeedbackPressable";
 import { alarmClockTime, formatClockTime, fmtDMY, fmtWeekday } from "@/src/timeUtils";
 import { rangeFor, shiftDurationHours, formatHours } from "@/src/shiftUtils";
@@ -26,7 +26,7 @@ function isNightShift(shift: Shift) {
 }
 
 export default function CalendarScreen() {
-  const { colors, clockFormat, colorTheme, effective } = useTheme();
+  const { colors, clockFormat, colorTheme, effective, visual } = useDesignSystem();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const useMockupLight = colorTheme === "teal" && effective === "light";
   const insets = useSafeAreaInsets();
@@ -215,13 +215,13 @@ export default function CalendarScreen() {
           const night = isNightShift(s);
           const alarm = s.alarm_enabled ? alarmClockTime(s.date, s.start_time, profile?.alarm_lead_minutes ?? 150) : null;
           const shiftSurface = useMockupLight
-            ? (night ? MOCKUP_LIGHT.nightSurface : MOCKUP_LIGHT.daySurface)
+            ? (night ? visual.nightSurface : visual.daySurface)
             : (night ? colors.brandTertiary : colors.successSurface);
           const shiftAccent = useMockupLight
-            ? (night ? MOCKUP_LIGHT.nightAccent : MOCKUP_LIGHT.dayAccent)
+            ? (night ? visual.nightAccent : visual.dayAccent)
             : (night ? colors.brand : colors.success);
-          const houseSurface = useMockupLight ? MOCKUP_LIGHT.houseSurface : colors.brandTertiary;
-          const houseAccent = useMockupLight ? MOCKUP_LIGHT.houseAccent : colors.brand;
+          const houseSurface = useMockupLight ? visual.houseSurface : colors.brandTertiary;
+          const houseAccent = useMockupLight ? visual.houseAccent : colors.brand;
           return (
             <Pressable key={s.id} testID={`agenda-shift-${s.id}`} onPress={() => router.push(`/shift/${s.id}`)} style={styles.shiftCard}>
               <View style={styles.shiftTop}>
