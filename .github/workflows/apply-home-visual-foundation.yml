@@ -1,4 +1,4 @@
-name: Unify ShiftMate tab screen headers
+name: Apply exact ShiftMate Home branding
 
 on:
   push:
@@ -16,95 +16,50 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: shiftmate-clean
-      - name: Replace duplicate tab headers with shared header
+      - name: Replace reconstructed Home wordmark with reference asset
         shell: python
         run: |
           from pathlib import Path
           import re
 
-          def sub_once(text, pattern, replacement, label):
-              text, count = re.subn(pattern, replacement, text, count=1)
-              if count != 1:
-                  raise SystemExit(f'{label} header block match count: {count}')
-              return text
-
-          # Calendar
-          path = Path('frontend/app/(tabs)/calendar.tsx')
+          path = Path('frontend/app/(tabs)/index.tsx')
           text = path.read_text()
-          text = text.replace(
-              'import { ShiftTypeBadge, HousePill } from "@/src/components/ShiftMateUI";',
-              'import { BrandScreenHeader, ShiftTypeBadge, HousePill } from "@/src/components/ShiftMateUI";',
-              1,
-          )
-          header = (
-              '        <BrandScreenHeader\n'
-              '          title="Calendar"\n'
-              '          trailing={\n'
-              '            <Pressable onPress={() => router.push("/shift/new?date=" + selected)} style={styles.addCircle} testID="calendar-add-shift">\n'
-              '              <Icon name="add" size={24} color={colors.onBrandPrimary} />\n'
-              '            </Pressable>\n'
-              '          }\n'
-              '        />'
-          )
-          text = sub_once(
-              text,
-              r'        <View style=\{styles\.brandRow\}>[\s\S]*?\n        </View>\n\n(?=        <View style=\{styles\.calendarCard\})',
-              header + '\n\n',
-              'Calendar',
-          )
-          path.write_text(text)
 
-          # Scan
-          path = Path('frontend/app/(tabs)/scan.tsx')
-          text = path.read_text()
-          anchor = 'import { Pressable } from "@/src/components/FeedbackPressable";\n'
-          shared = 'import { BrandScreenHeader } from "@/src/components/ShiftMateUI";\n'
-          if shared not in text:
-              if anchor not in text:
-                  raise SystemExit('Scan import anchor not found')
-              text = text.replace(anchor, anchor + shared, 1)
-          header = (
-              '        <BrandScreenHeader\n'
-              '          title="Scan roster"\n'
-              '          subtitle="Read, review and save only the shifts you want."\n'
-              '          trailing={\n'
-              '            <Pressable testID="scan-payslip-btn" onPress={() => router.push("/payslip")} style={styles.payslipShortcut}>\n'
-              '              <Icon name="receipt-outline" size={17} color={colors.brand} />\n'
-              '              <Text style={styles.payslipShortcutText}>Payslip</Text>\n'
-              '            </Pressable>\n'
-              '          }\n'
-              '        />'
-          )
-          text = sub_once(
-              text,
-              r'        <View style=\{styles\.brandRow\}>[\s\S]*?\n        </View>\n\n(?=        <View style=\{styles\.progressCard\})',
-              header + '\n\n',
-              'Scan',
-          )
-          path.write_text(text)
+          if '  Image,\n' not in text:
+              text = text.replace('  ActivityIndicator,\n', '  ActivityIndicator,\n  Image,\n', 1)
 
-          # Settings
-          path = Path('frontend/app/(tabs)/settings.tsx')
-          text = path.read_text()
-          text = text.replace(
-              'import { SectionHeader } from "@/src/components/ShiftMateUI";',
-              'import { BrandScreenHeader, SectionHeader } from "@/src/components/ShiftMateUI";',
-              1,
+          pattern = r'          <View style=\{styles\.brandLockup\}>[\s\S]*?\n          </View>\n\n(?=          <View style=\{styles\.headerActions\}>)'
+          replacement = (
+              '          <View style={styles.brandLockup}>\n'
+              '            <Image\n'
+              '              source={require("../../assets/shiftmate-brand.png")}\n'
+              '              style={styles.brandLogo}\n'
+              '              resizeMode="contain"\n'
+              '              accessibilityLabel="ShiftMate — Supporting Brighter Days"\n'
+              '            />\n'
+              '          </View>\n\n'
           )
-          text = sub_once(
-              text,
-              r'        <View style=\{styles\.brandRow\}>[\s\S]*?\n        </View>\n\n(?=        <SectionHeader icon="person-outline")',
-              '        <BrandScreenHeader title="Settings" />\n\n',
-              'Settings',
-          )
+          text, count = re.subn(pattern, replacement, text, count=1)
+          if count != 1:
+              raise SystemExit(f'Home brand block match count: {count}')
+
+          style_anchor = '    brandLockup: { flexDirection: "row", alignItems: "center", flexShrink: 1 },\n'
+          brand_style = '    brandLogo: { width: 198, height: 44 },\n'
+          if brand_style not in text:
+              if style_anchor not in text:
+                  raise SystemExit('Home brand style anchor not found')
+              text = text.replace(style_anchor, style_anchor + brand_style, 1)
+
+          if 'shiftmate-brand.png' not in text:
+              raise SystemExit('Reference brand asset was not wired')
           path.write_text(text)
 
       - name: Check patch
         run: git diff --check
-      - name: Commit shared headers
+      - name: Commit exact Home branding
         run: |
           git config user.name "ShiftMate UI automation"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add frontend/app
-          git commit -m "Use shared headers across tab screens"
+          git add frontend/app/'(tabs)'/index.tsx
+          git commit -m "Use exact ShiftMate Home brand artwork"
           git push origin HEAD:shiftmate-clean
