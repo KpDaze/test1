@@ -1,4 +1,4 @@
-name: Wire shared ShiftMate visual primitives
+name: Unify ShiftMate tab screen headers
 
 on:
   push:
@@ -16,107 +16,99 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: shiftmate-clean
-      - name: Wire shared visual primitives
+      - name: Replace duplicate tab headers with shared header
         shell: python
         run: |
           from pathlib import Path
-          import re
 
-          def add_import(text: str, anchor: str, new_import: str, label: str):
-              if new_import in text:
-                  return text
+          # Calendar
+          path = Path('frontend/app/(tabs)/calendar.tsx')
+          text = path.read_text()
+          text = text.replace(
+              'import { ShiftTypeBadge, HousePill } from "@/src/components/ShiftMateUI";',
+              'import { BrandScreenHeader, ShiftTypeBadge, HousePill } from "@/src/components/ShiftMateUI";',
+              1,
+          )
+          old = '''        <View style={styles.brandRow}>
+          <View style={styles.brandLockup}>
+            <View style={styles.logoMark}><Icon name="heart" size={22} color={colors.onBrandPrimary} /></View>
+            <View>
+              <Text style={styles.brandSmall}>ShiftMate</Text>
+              <Text style={styles.screenTitle}>Calendar</Text>
+            </View>
+          </View>
+          <Pressable onPress={() => router.push("/shift/new?date=" + selected)} style={styles.addCircle} testID="calendar-add-shift">
+            <Icon name="add" size={24} color={colors.onBrandPrimary} />
+          </Pressable>
+        </View>'''
+          new = '''        <BrandScreenHeader
+          title="Calendar"
+          trailing={
+            <Pressable onPress={() => router.push("/shift/new?date=" + selected)} style={styles.addCircle} testID="calendar-add-shift">
+              <Icon name="add" size={24} color={colors.onBrandPrimary} />
+            </Pressable>
+          }
+        />'''
+          if old not in text:
+              raise SystemExit('Calendar header block not found')
+          text = text.replace(old, new, 1)
+          path.write_text(text)
+
+          # Scan
+          path = Path('frontend/app/(tabs)/scan.tsx')
+          text = path.read_text()
+          anchor = 'import { Pressable } from "@/src/components/FeedbackPressable";\n'
+          shared = 'import { BrandScreenHeader } from "@/src/components/ShiftMateUI";\n'
+          if shared not in text:
               if anchor not in text:
-                  raise SystemExit(f'{label} import anchor missing')
-              return text.replace(anchor, anchor + new_import, 1)
+                  raise SystemExit('Scan import anchor not found')
+              text = text.replace(anchor, anchor + shared, 1)
+          old = '''        <View style={styles.brandRow}>
+          <View style={styles.logoMark}><Icon name="heart" size={22} color={colors.onBrandPrimary} /></View>
+          <View style={{ flex: 1 }}><Text style={styles.brandSmall}>ShiftMate</Text><Text style={styles.title}>Scan roster</Text><Text style={styles.subtitle}>Read, review and save only the shifts you want.</Text></View>
+          <Pressable testID="scan-payslip-btn" onPress={() => router.push("/payslip")} style={styles.payslipShortcut}>
+            <Icon name="receipt-outline" size={17} color={colors.brand} />
+            <Text style={styles.payslipShortcutText}>Payslip</Text>
+          </Pressable>
+        </View>'''
+          new = '''        <BrandScreenHeader
+          title="Scan roster"
+          subtitle="Read, review and save only the shifts you want."
+          trailing={
+            <Pressable testID="scan-payslip-btn" onPress={() => router.push("/payslip")} style={styles.payslipShortcut}>
+              <Icon name="receipt-outline" size={17} color={colors.brand} />
+              <Text style={styles.payslipShortcutText}>Payslip</Text>
+            </Pressable>
+          }
+        />'''
+          if old not in text:
+              raise SystemExit('Scan header block not found')
+          text = text.replace(old, new, 1)
+          path.write_text(text)
 
-          # HOME
-          home_path = Path('frontend/app/(tabs)/index.tsx')
-          home = home_path.read_text()
-          home = add_import(
-              home,
-              'import { Pressable } from "@/src/components/FeedbackPressable";\n',
-              'import { ShiftTypeBadge, HousePill } from "@/src/components/ShiftMateUI";\n',
-              'Home',
+          # Settings
+          path = Path('frontend/app/(tabs)/settings.tsx')
+          text = path.read_text()
+          text = text.replace(
+              'import { SectionHeader } from "@/src/components/ShiftMateUI";',
+              'import { BrandScreenHeader, SectionHeader } from "@/src/components/ShiftMateUI";',
+              1,
           )
-          home, n_badge = re.subn(
-              r'<View style=\{\[styles\.shiftTypeBadge, \{ backgroundColor: night \? nightSurface : daySurface \}\]\}>[\s\S]*?</View>',
-              '<ShiftTypeBadge night={night} />',
-              home,
-              count=1,
-          )
-          home, n_house = re.subn(
-              r'<View style=\{\[styles\.housePill, \{ backgroundColor: houseSurface \}\]\}>[\s\S]*?</View>',
-              '<HousePill name={houseName} />',
-              home,
-              count=1,
-          )
-          if n_badge != 1 or n_house != 1:
-              raise SystemExit(f'Home primitive matches badge={n_badge} house={n_house}')
-          for line in (
-              '  const daySurface = visual.daySurface;\n',
-              '  const dayAccent = visual.dayAccent;\n',
-              '  const nightSurface = visual.nightSurface;\n',
-              '  const houseSurface = visual.houseSurface;\n',
-              '  const houseAccent = visual.houseAccent;\n',
-          ):
-              home = home.replace(line, '')
-          home_path.write_text(home)
-
-          # CALENDAR
-          cal_path = Path('frontend/app/(tabs)/calendar.tsx')
-          cal = cal_path.read_text()
-          cal = add_import(
-              cal,
-              'import { Pressable } from "@/src/components/FeedbackPressable";\n',
-              'import { ShiftTypeBadge, HousePill } from "@/src/components/ShiftMateUI";\n',
-              'Calendar',
-          )
-          cal, n_house = re.subn(
-              r'<View style=\{\[styles\.housePill, \{ backgroundColor: houseSurface \}\]\}>[\s\S]*?</View>',
-              '<HousePill name={s.house_name || "No location"} compact />',
-              cal,
-              count=1,
-          )
-          cal, n_kind = re.subn(
-              r'<View style=\{\[styles\.kindPill, \{ backgroundColor: shiftSurface \}\]\}>[\s\S]*?</View>',
-              '<ShiftTypeBadge night={night} compact />',
-              cal,
-              count=1,
-          )
-          if n_house != 1 or n_kind != 1:
-              raise SystemExit(f'Calendar primitive matches house={n_house} kind={n_kind}')
-          cal = re.sub(r'\n\s*const shiftSurface = useMockupLight[\s\S]*?const houseAccent = useMockupLight \? visual\.houseAccent : colors\.brand;\n', '\n', cal, count=1)
-          cal_path.write_text(cal)
-
-          # SETTINGS
-          settings_path = Path('frontend/app/(tabs)/settings.tsx')
-          settings = settings_path.read_text()
-          settings = add_import(
-              settings,
-              'import { Pressable } from "@/src/components/FeedbackPressable";\n',
-              'import { SectionHeader } from "@/src/components/ShiftMateUI";\n',
-              'Settings',
-          )
-          settings, removed = re.subn(
-              r'\nfunction SectionTitle\([\s\S]*?\n}\n\nexport default function SettingsScreen\(\) \{',
-              '\nexport default function SettingsScreen() {',
-              settings,
-              count=1,
-          )
-          if removed != 1:
-              raise SystemExit('Could not remove local Settings SectionTitle')
-          settings = settings.replace('<SectionTitle ', '<SectionHeader ')
-          settings = settings.replace(' colors={colors} styles={styles} />', ' />')
-          if '<SectionTitle ' in settings:
-              raise SystemExit('Settings still contains local SectionTitle usage')
-          settings_path.write_text(settings)
+          old = '''        <View style={styles.brandRow}>
+          <View style={styles.logoMark}><Icon name="heart" size={22} color={colors.onBrandPrimary} /></View>
+          <View style={{ flex: 1 }}><Text style={styles.brandSmall}>ShiftMate</Text><Text style={styles.title}>Settings</Text></View>
+        </View>'''
+          if old not in text:
+              raise SystemExit('Settings header block not found')
+          text = text.replace(old, '        <BrandScreenHeader title="Settings" />', 1)
+          path.write_text(text)
 
       - name: Check patch
         run: git diff --check
-      - name: Commit primitive wiring
+      - name: Commit shared headers
         run: |
           git config user.name "ShiftMate UI automation"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add frontend/app
-          git commit -m "Wire shared ShiftMate visual primitives"
+          git commit -m "Use shared headers across tab screens"
           git push origin HEAD:shiftmate-clean
