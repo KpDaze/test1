@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Image,
   PanResponder,
   RefreshControl,
   ScrollView,
@@ -192,14 +193,12 @@ export default function Dashboard() {
       >
         <View style={styles.brandRow}>
           <View style={styles.brandLockup}>
-            <View style={styles.brandMark}><Icon name="heart" size={24} color={exactOnAccent} /></View>
-            <View style={styles.brandTextBlock}>
-              <Text allowFontScaling={false} style={styles.brandName}>
-                <Text style={styles.brandNameShift}>Shift</Text>
-                <Text style={styles.brandNameMate}>Mate</Text>
-              </Text>
-              <Text allowFontScaling={false} style={styles.brandTagline}>SUPPORTING BRIGHTER DAYS</Text>
-            </View>
+            <Image
+              source={require("../../assets/shiftmate-brand.png")}
+              style={styles.brandLogo}
+              resizeMode="contain"
+              accessibilityLabel="ShiftMate — Supporting Brighter Days"
+            />
           </View>
 
           <View style={styles.headerActions}>
@@ -416,6 +415,7 @@ function makeStyles(colors: Palette, visual: ReturnType<typeof useDesignSystem>[
       marginBottom: 14,
     },
     brandLockup: { flexDirection: "row", alignItems: "center", flexShrink: 1 },
+    brandLogo: { width: 198, height: 44 },
     brandMark: { width: 44, height: 44, marginRight: 6, borderRadius: 14, backgroundColor: teal, alignItems: "center", justifyContent: "center", transform: [{ rotate: "-8deg" }] },
     brandTextBlock: { flexShrink: 1, justifyContent: "center" },
     brandName: { ...typeScale.wordmark, fontFamily: fonts.displayBold },
