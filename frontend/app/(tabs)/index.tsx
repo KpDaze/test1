@@ -38,6 +38,8 @@ type HomeLayout = {
   veryCompact: boolean;
 };
 
+const BRAND_MARK = require("../../assets/branding/shiftmate-mark-source.png");
+
 function toMinutes(hhmm: string) {
   const [h, m] = hhmm.split(":").map(Number);
   return h * 60 + m;
@@ -193,12 +195,14 @@ export default function Dashboard() {
       >
         <View style={styles.brandRow}>
           <View style={styles.brandLockup}>
-            <Image
-              source={require("../../assets/shiftmate-brand.png")}
-              style={styles.brandLogo}
-              resizeMode="contain"
-              accessibilityLabel="ShiftMate — Supporting Brighter Days"
-            />
+            <Image source={BRAND_MARK} style={styles.brandMark} resizeMode="contain" />
+            <View style={styles.brandTextBlock}>
+              <Text allowFontScaling={false} style={styles.brandName}>
+                <Text style={styles.brandNameShift}>Shift</Text>
+                <Text style={styles.brandNameMate}>Mate</Text>
+              </Text>
+              <Text allowFontScaling={false} style={styles.brandTagline}>SUPPORTING BRIGHTER DAYS</Text>
+            </View>
           </View>
 
           <View style={styles.headerActions}>
@@ -415,7 +419,6 @@ function makeStyles(colors: Palette, visual: ReturnType<typeof useDesignSystem>[
       marginBottom: 14,
     },
     brandLockup: { flexDirection: "row", alignItems: "center", flexShrink: 1 },
-    brandLogo: { width: 198, height: 44 },
     brandMark: { width: 44, height: 44, marginRight: 6, borderRadius: 14, backgroundColor: teal, alignItems: "center", justifyContent: "center", transform: [{ rotate: "-8deg" }] },
     brandTextBlock: { flexShrink: 1, justifyContent: "center" },
     brandName: { ...typeScale.wordmark, fontFamily: fonts.displayBold },
