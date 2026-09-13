@@ -1,0 +1,49 @@
+name: ShiftMate public Android verification
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [shiftmate-clean]
+    paths:
+      - .github/workflows/shiftmate-public-build.yml
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/package.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+      - name: Typecheck
+        run: pnpm run typecheck
+      - name: Generate Android project
+        run: pnpm exec expo prebuild --platform android --clean --no-install
+      - name: Build debug APK
+        run: ./gradlew assembleDebug --stacktrace
+        working-directory: frontend/android
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ShiftMate-debug-verification
+          path: frontend/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
