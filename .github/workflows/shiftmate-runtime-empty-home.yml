@@ -5,6 +5,7 @@ on:
     branches: [shiftmate-clean]
     paths:
       - .github/workflows/shiftmate-runtime-empty-home.yml
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -36,7 +37,7 @@ jobs:
           arch: x86_64
           target: google_apis
           profile: pixel_4
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -camera-front none
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -no-snapshot-save -camera-back none -camera-front none
           disable-animations: true
           script: |
             adb wait-for-device
@@ -45,11 +46,15 @@ jobs:
             adb shell settings put system font_scale 1.0
             adb shell settings put system time_12_24 24
             adb install -r apk/app-release.apk
+            adb shell pm clear com.shiftmate.app || true
+            adb shell am force-stop com.google.android.apps.nexuslauncher || true
+            adb shell input keyevent 4 || true
             adb shell am force-stop com.shiftmate.app
-            adb shell am start -W -a android.intent.action.VIEW -d 'shiftmate:///(tabs)' com.shiftmate.app || true
-            sleep 8
-            adb shell dumpsys window | grep -E 'mCurrentFocus|mFocusedApp' || true
+            adb shell am start -W -S -n com.shiftmate.app/.MainActivity -a android.intent.action.VIEW -d 'shiftmate:///(tabs)' 
+            sleep 12
+            adb shell dumpsys activity activities | grep -E 'mResumedActivity|topResumedActivity' || true
             adb exec-out screencap -p > shiftmate-home-empty.png
+            test -s shiftmate-home-empty.png
       - name: Upload screenshot
         uses: actions/upload-artifact@v4
         with:
