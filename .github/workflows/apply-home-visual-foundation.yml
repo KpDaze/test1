@@ -1,0 +1,101 @@
+name: Apply Home visual foundation
+
+on:
+  push:
+    branches: [shiftmate-clean]
+    paths:
+      - .github/workflows/apply-home-visual-foundation.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: shiftmate-clean
+      - name: Apply shared design system to Home
+        shell: python
+        run: |
+          from pathlib import Path
+
+          path = Path('frontend/app/(tabs)/index.tsx')
+          text = path.read_text()
+
+          def replace_once(old: str, new: str):
+              global text
+              if text.count(old) != 1:
+                  raise SystemExit(f'Expected exactly one match, found {text.count(old)} for: {old[:80]!r}')
+              text = text.replace(old, new, 1)
+
+          replace_once(
+              'import { fonts, typeScale, useTheme, type Palette } from "@/src/theme";\nimport { MOCKUP_LIGHT } from "@/src/mockupPalette";',
+              'import { fonts, typeScale, type Palette } from "@/src/theme";\nimport { useDesignSystem } from "@/src/designSystem";'
+          )
+
+          replace_once(
+              '  const { colors, clockFormat, colorTheme, effective } = useTheme();',
+              '  const { colors, clockFormat, exactReference, visual, dateTiles } = useDesignSystem();'
+          )
+          replace_once(
+              '  const useMockupLight = colorTheme === "teal" && effective === "light";',
+              '  const useMockupLight = exactReference;'
+          )
+          replace_once(
+              '  const styles = useMemo(() => makeStyles(colors, useMockupLight, layout), [colors, useMockupLight, layout]);',
+              '  const styles = useMemo(() => makeStyles(colors, visual, useMockupLight, layout), [colors, visual, useMockupLight, layout]);'
+          )
+
+          replace_once(
+              '''  const exactAccent = useMockupLight ? MOCKUP_LIGHT.teal : colors.brand;\n  const exactOnAccent = useMockupLight ? MOCKUP_LIGHT.nearWhite : colors.onBrandPrimary;\n  const changedPositive = useMockupLight ? MOCKUP_LIGHT.dayAccent : colors.success;\n  const changedNegative = useMockupLight ? MOCKUP_LIGHT.red : colors.error;\n  const daySurface = useMockupLight ? MOCKUP_LIGHT.daySurface : colors.successSurface;\n  const dayAccent = useMockupLight ? MOCKUP_LIGHT.dayAccent : colors.success;\n  const nightSurface = useMockupLight ? MOCKUP_LIGHT.nightSurface : colors.brandTertiary;\n  const nightAccent = useMockupLight ? MOCKUP_LIGHT.nightAccent : colors.brandSecondary;\n  const houseSurface = useMockupLight ? MOCKUP_LIGHT.houseSurface : colors.brandTertiary;\n  const houseAccent = useMockupLight ? MOCKUP_LIGHT.houseAccent : colors.brand;\n  const railDayAccent = useMockupLight ? MOCKUP_LIGHT.teal : colors.brand;\n  const quoteIconColor = useMockupLight ? MOCKUP_LIGHT.tealMid : colors.brand;''',
+              '''  const exactAccent = visual.accent;\n  const exactOnAccent = visual.onAccent;\n  const changedPositive = visual.dayAccent;\n  const changedNegative = visual.danger;\n  const daySurface = visual.daySurface;\n  const dayAccent = visual.dayAccent;\n  const nightSurface = visual.nightSurface;\n  const nightAccent = visual.nightAccent;\n  const houseSurface = visual.houseSurface;\n  const houseAccent = visual.houseAccent;\n  const railDayAccent = visual.accent;\n  const quoteIconColor = visual.accentMid;'''
+          )
+
+          replacements = {
+              'useMockupLight ? MOCKUP_LIGHT.navyDeep : colors.onSurfaceSecondary': 'visual.textStrong',
+              'useMockupLight ? MOCKUP_LIGHT.tealMid : colors.brand': 'visual.accentMid',
+              'useMockupLight ? MOCKUP_LIGHT.activeTeal : colors.brand': 'visual.accentStrong',
+              'useMockupLight ? MOCKUP_LIGHT.navyDeep : colors.muted': 'visual.textStrong',
+          }
+          for old, new in replacements.items():
+              text = text.replace(old, new)
+
+          replace_once(
+              '              const note = (shift.notes || "").trim();',
+              '              const dateTone = dateTiles[index % dateTiles.length];\n              const note = (shift.notes || "").trim();'
+          )
+          replace_once(
+              '                  <View style={styles.dateTile}>',
+              '                  <View style={[styles.dateTile, { backgroundColor: dateTone.surface }]}>'
+          )
+          replace_once(
+              '                    <Text allowFontScaling={false} style={styles.dateWeekday}>{parts.weekday}</Text>',
+              '                    <Text allowFontScaling={false} style={[styles.dateWeekday, { color: dateTone.accent }]}>{parts.weekday}</Text>'
+          )
+
+          replace_once(
+              'function makeStyles(colors: Palette, useMockupLight: boolean, layout: HomeLayout) {\n  const { compact, veryCompact } = layout;\n  const mock = useMockupLight ? MOCKUP_LIGHT : null;\n  const page = mock?.background ?? colors.surface;\n  const card = mock?.nearWhite ?? colors.surfaceSecondary;\n  const pale = mock?.coolPale ?? colors.surfaceTertiary;\n  const aqua = mock?.paleAqua ?? colors.brandTertiary;\n  const text = mock?.navy ?? colors.onSurface;\n  const deep = mock?.navyDeep ?? colors.onSurfaceSecondary;\n  const muted = mock?.muted ?? colors.muted;\n  const teal = mock?.teal ?? colors.brand;\n  const activeTeal = mock?.activeTeal ?? colors.brand;\n  const border = mock?.coolPale ?? colors.border;\n  const divider = mock?.paleBlueGrey ?? colors.divider;',
+              'function makeStyles(colors: Palette, visual: ReturnType<typeof useDesignSystem>["visual"], useMockupLight: boolean, layout: HomeLayout) {\n  const { compact, veryCompact } = layout;\n  const page = visual.page;\n  const card = visual.card;\n  const pale = visual.cardMuted;\n  const aqua = visual.accentSurface;\n  const text = visual.text;\n  const deep = visual.textStrong;\n  const muted = visual.muted;\n  const teal = visual.accent;\n  const activeTeal = visual.accentStrong;\n  const border = visual.border;\n  const divider = visual.divider;'
+          )
+
+          text = text.replace('shadowColor: useMockupLight ? MOCKUP_LIGHT.steelBlue : "#000000"', 'shadowColor: visual.steel')
+          text = text.replace('color: mock?.nearWhite ?? colors.onBrandPrimary', 'color: visual.onAccent')
+          text = text.replace('      backgroundColor: pale,\n      alignItems: "center",', '      backgroundColor: pale,\n      alignItems: "center",')
+          text = text.replace('    dateWeekday: { color: teal, fontFamily: fonts.textBold, ...typeScale.dateWeekday, marginTop: 2 },', '    dateWeekday: { fontFamily: fonts.textBold, ...typeScale.dateWeekday, marginTop: 2 },')
+
+          if 'MOCKUP_LIGHT' in text:
+              raise SystemExit('Home still contains direct MOCKUP_LIGHT references')
+
+          path.write_text(text)
+
+      - name: Check patch
+        run: git diff --check
+      - name: Commit Home visual foundation
+        run: |
+          git config user.name "ShiftMate UI automation"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add frontend/app/'(tabs)'/index.tsx
+          git commit -m "Apply shared Home visual system and coloured date tiles"
+          git push origin HEAD:shiftmate-clean
