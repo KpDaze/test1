@@ -6,6 +6,7 @@ on:
     paths:
       - 'frontend/app/**'
       - 'frontend/src/**'
+      - 'frontend/assets/**'
       - 'frontend/modules/**'
       - 'frontend/package.json'
       - '.github/workflows/shiftmate-static-check.yml'
@@ -80,6 +81,10 @@ jobs:
               problems.append('Home coloured date-tile sequence not wired')
           if 'ShiftTypeBadge' not in home or 'HousePill' not in home:
               problems.append('Home shared shift primitives not wired')
+          if 'require("../../assets/shiftmate-brand.png")' not in home:
+              problems.append('Home exact ShiftMate brand asset is not wired')
+          if not Path('assets/shiftmate-brand.png').exists():
+              problems.append('ShiftMate brand asset is missing')
 
           design = Path('src/designSystem.ts').read_text()
           for color in ('#E0F1FD', '#D7F6EE', '#EEE4FC', '#FEE0E2'):
