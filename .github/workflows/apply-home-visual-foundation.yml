@@ -1,4 +1,4 @@
-name: Apply shared sizing and geometry roles
+name: Wire shared ShiftMate visual primitives
 
 on:
   push:
@@ -16,117 +16,106 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: shiftmate-clean
-      - name: Apply shared sizing and geometry roles
+      - name: Wire shared visual primitives
         shell: python
         run: |
           from pathlib import Path
           import re
 
-          design_path = Path('frontend/src/designSystem.ts')
-          design = design_path.read_text()
-          anchor = '  brandMarkSize: 44,\n'
-          additions = (
-              '  cardPadding: 16,\n'
-              '  compactCardPadding: 12,\n'
-              '  roomyCardPadding: 20,\n'
-              '  controlHeight: 44,\n'
-              '  buttonHeight: 44,\n'
+          # HOME — central shift badge and house pill.
+          home_path = Path('frontend/app/(tabs)/index.tsx')
+          home = home_path.read_text()
+          home_import = 'import { ShiftTypeBadge, HousePill } from "@/src/components/ShiftMateUI";\n'
+          if home_import not in home:
+              anchor = 'import { Pressable } from "@/src/components/FeedbackPressable";\n'
+              if anchor not in home:
+                  raise SystemExit('Home import anchor missing')
+              home = home.replace(anchor, anchor + home_import, 1)
+
+          old_badge = '''                        <View style={[styles.shiftTypeBadge, { backgroundColor: night ? nightSurface : daySurface }]}>
+                          <Icon name={night ? "moon" : "sunny"} size={styles.iconBadge.width as number} color={night ? nightAccent : dayAccent} />
+                          <Text allowFontScaling={false} style={[styles.shiftTypeText, { color: night ? nightAccent : dayAccent }]} numberOfLines={1}>
+                            {night ? "Night shift" : "Day shift"}
+                          </Text>
+                        </View>'''
+          if old_badge not in home:
+              raise SystemExit('Home badge block missing')
+          home = home.replace(old_badge, '                        <ShiftTypeBadge night={night} />', 1)
+
+          old_house = '''                      <View style={[styles.housePill, { backgroundColor: houseSurface }]}>
+                        <Icon name="home" size={styles.iconHouse.width as number} color={houseAccent} />
+                        <Text allowFontScaling={false} style={[styles.houseText, { color: houseAccent }]} numberOfLines={1}>{houseName}</Text>
+                      </View>'''
+          if old_house not in home:
+              raise SystemExit('Home house pill block missing')
+          home = home.replace(old_house, '                      <HousePill name={houseName} />', 1)
+          for line in (
+            '  const daySurface = visual.daySurface;\n',
+            '  const dayAccent = visual.dayAccent;\n',
+            '  const nightSurface = visual.nightSurface;\n',
+            '  const houseSurface = visual.houseSurface;\n',
+            '  const houseAccent = visual.houseAccent;\n',
+          ):
+              home = home.replace(line, '')
+          # nightAccent still drives the timeline node.
+          home_path.write_text(home)
+
+          # CALENDAR — same shift visuals as Home.
+          calendar_path = Path('frontend/app/(tabs)/calendar.tsx')
+          cal = calendar_path.read_text()
+          cal_import = 'import { ShiftTypeBadge, HousePill } from "@/src/components/ShiftMateUI";\n'
+          if cal_import not in cal:
+              anchor = 'import { Pressable } from "@/src/components/FeedbackPressable";\n'
+              if anchor not in cal:
+                  raise SystemExit('Calendar import anchor missing')
+              cal = cal.replace(anchor, anchor + cal_import, 1)
+
+          old_cal_house = '<View style={[styles.housePill, { backgroundColor: houseSurface }]}><Icon name="home" size={13} color={houseAccent} /><Text style={[styles.houseText, { color: houseAccent }]} numberOfLines={1}>{s.house_name || "No location"}</Text></View>'
+          old_cal_kind = '''<View style={[styles.kindPill, { backgroundColor: shiftSurface }]}>
+                  <Icon name={night ? "moon" : "sunny"} size={11} color={shiftAccent} />
+                  <Text style={[styles.kindText, { color: shiftAccent }]}>{night ? "Night" : "Day"}</Text>
+                </View>'''
+          if old_cal_house not in cal or old_cal_kind not in cal:
+              raise SystemExit('Calendar shared-pill blocks missing')
+          cal = cal.replace(old_cal_house, '<HousePill name={s.house_name || "No location"} compact />', 1)
+          cal = cal.replace(old_cal_kind, '<ShiftTypeBadge night={night} compact />', 1)
+          cal = re.sub(
+              r'          const shiftSurface = useMockupLight\n            \? \(night \? visual\.nightSurface : visual\.daySurface\)\n            : \(night \? colors\.brandTertiary : colors\.successSurface\);\n'
+              r'          const shiftAccent = useMockupLight\n            \? \(night \? visual\.nightAccent : visual\.dayAccent\)\n            : \(night \? colors\.brand : colors\.success\);\n'
+              r'          const houseSurface = useMockupLight \? visual\.houseSurface : colors\.brandTertiary;\n'
+              r'          const houseAccent = useMockupLight \? visual\.houseAccent : colors\.brand;\n',
+              '', cal, count=1
           )
-          if 'cardPadding:' not in design:
-              if design.count(anchor) != 1:
-                  raise SystemExit('Could not locate component-token insertion point')
-              design = design.replace(anchor, anchor + additions, 1)
-              design_path.write_text(design)
+          calendar_path.write_text(cal)
 
-          files = [
-            Path('frontend/app/(tabs)/index.tsx'),
-            Path('frontend/app/(tabs)/calendar.tsx'),
-            Path('frontend/app/(tabs)/scan.tsx'),
-            Path('frontend/app/(tabs)/settings.tsx'),
-            Path('frontend/app/payslip.tsx'),
-            Path('frontend/app/shift/[id].tsx'),
-            Path('frontend/app/onboarding.tsx'),
-          ]
+          # SETTINGS — replace the page-local section-heading implementation.
+          settings_path = Path('frontend/app/(tabs)/settings.tsx')
+          settings = settings_path.read_text()
+          settings_import = 'import { SectionHeader } from "@/src/components/ShiftMateUI";\n'
+          if settings_import not in settings:
+              anchor = 'import { Pressable } from "@/src/components/FeedbackPressable";\n'
+              if anchor not in settings:
+                  raise SystemExit('Settings import anchor missing')
+              settings = settings.replace(anchor, anchor + settings_import, 1)
 
-          large_cards = {
-            'payCard','calendarCard','heroCard','card','compareCard','manualCard','summaryCard','alarmCard','emptyCard'
-          }
-          compact_cards = {
-            'shiftCard','fortnightCard','adjustmentCard','houseCard','themeOption','detectedCard','voiceCard','noticeCard','imageCard'
-          }
-          controls = {
-            'input','notesInput','dateInput','timeInput','selector','timePickerButton','rateRow','anchorButton',
-            'primarySmall','primaryButton','secondaryButton','primaryWide','primaryAction','secondaryAction','actionButton',
-            'clearButton','clearHalf','primaryHalf','saveButton','changeButton'
-          }
-          button_keys = {
-            'primarySmall','primaryButton','secondaryButton','primaryWide','primaryAction','secondaryAction','actionButton',
-            'clearButton','clearHalf','primaryHalf','saveButton','changeButton','payslipShortcut'
-          }
-
-          def ensure_design_import(text: str):
-              m = re.search(r'import \{([^}]*)\} from "@/src/designSystem";', text)
-              if m:
-                  names = [n.strip() for n in m.group(1).split(',') if n.strip()]
-                  for name in ('layoutTokens','componentTokens'):
-                      if name not in names:
-                          names.append(name)
-                  repl = 'import { ' + ', '.join(names) + ' } from "@/src/designSystem";'
-                  return text[:m.start()] + repl + text[m.end():]
-              theme_match = re.search(r'import \{[^}]*\} from "@/src/theme";\n', text)
-              if not theme_match:
-                  raise SystemExit('Could not anchor design-system import')
-              return text[:theme_match.end()] + 'import { layoutTokens, componentTokens } from "@/src/designSystem";\n' + text[theme_match.end():]
-
-          total = 0
-          for path in files:
-              text = path.read_text()
-              original = text
-              # Standard screen horizontal rhythm for main content/footer shells.
-              text = text.replace('paddingHorizontal: 20', 'paddingHorizontal: layoutTokens.screenPadding')
-
-              out = []
-              for line in text.splitlines():
-                  m = re.match(r'^(\s*)([A-Za-z0-9_]+): \{(.*)\},\s*$', line)
-                  if not m:
-                      out.append(line)
-                      continue
-                  indent, key, body = m.group(1), m.group(2), m.group(3)
-                  updated = body
-                  if key in large_cards:
-                      updated = re.sub(r'borderRadius:\s*\d+(?:\.\d+)?', 'borderRadius: componentTokens.cardRadius', updated)
-                  elif key in compact_cards:
-                      updated = re.sub(r'borderRadius:\s*\d+(?:\.\d+)?', 'borderRadius: componentTokens.compactCardRadius', updated)
-                  elif key in controls:
-                      updated = re.sub(r'borderRadius:\s*\d+(?:\.\d+)?', 'borderRadius: componentTokens.controlRadius', updated)
-                  if key == 'dateTile':
-                      updated = re.sub(r'borderRadius:\s*\d+(?:\.\d+)?', 'borderRadius: componentTokens.dateTileRadius', updated)
-                  if key == 'logoMark':
-                      updated = re.sub(r'width:\s*44', 'width: componentTokens.brandMarkSize', updated)
-                      updated = re.sub(r'height:\s*44', 'height: componentTokens.brandMarkSize', updated)
-                      updated = re.sub(r'borderRadius:\s*15', 'borderRadius: componentTokens.compactCardRadius', updated)
-                  if key in button_keys and 'minHeight:' not in updated and 'height:' not in updated:
-                      updated = updated.rstrip() + ', minHeight: layoutTokens.touchTarget'
-                  if updated != body:
-                      total += 1
-                      line = f'{indent}{key}: {{ {updated} }},'
-                  out.append(line)
-              text = '\n'.join(out) + ('\n' if text.endswith('\n') else '')
-              if text != original:
-                  text = ensure_design_import(text)
-                  path.write_text(text)
-                  print('Geometry:', path)
-
-          if total < 20:
-              raise SystemExit(f'Expected broad geometry migration; changed only {total} style roles')
-          print('Total geometry roles migrated:', total)
+          settings, removed = re.subn(
+              r'\nfunction SectionTitle\([\s\S]*?\n}\n\nexport default function SettingsScreen\(\) \{',
+              '\nexport default function SettingsScreen() {',
+              settings,
+              count=1,
+          )
+          if removed != 1:
+              raise SystemExit('Could not remove local Settings SectionTitle')
+          settings = settings.replace('<SectionTitle ', '<SectionHeader ')
+          settings = settings.replace(' colors={colors} styles={styles} />', ' />')
+          settings_path.write_text(settings)
 
       - name: Check patch
         run: git diff --check
-      - name: Commit geometry migration
+      - name: Commit primitive wiring
         run: |
           git config user.name "ShiftMate UI automation"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add frontend/src/designSystem.ts frontend/app
-          git commit -m "Apply shared sizing and geometry across ShiftMate"
+          git add frontend/app
+          git commit -m "Wire shared ShiftMate visual primitives"
           git push origin HEAD:shiftmate-clean
