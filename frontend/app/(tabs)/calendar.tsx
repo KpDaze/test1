@@ -7,6 +7,7 @@ import { api, Shift, Profile } from "@/src/api";
 import { spacing, radius, type Palette, fonts, typeScale } from "@/src/theme";
 import { useDesignSystem, layoutTokens, componentTokens } from "@/src/designSystem";
 import { Pressable } from "@/src/components/FeedbackPressable";
+import { ShiftTypeBadge, HousePill } from "@/src/components/ShiftMateUI";
 import { alarmClockTime, formatClockTime, fmtDMY, fmtWeekday } from "@/src/timeUtils";
 import { rangeFor, shiftDurationHours, formatHours } from "@/src/shiftUtils";
 import { cancelShiftAlarm } from "@/src/notifications";
@@ -214,14 +215,6 @@ export default function CalendarScreen() {
         ) : dayShifts.map((s) => {
           const night = isNightShift(s);
           const alarm = s.alarm_enabled ? alarmClockTime(s.date, s.start_time, profile?.alarm_lead_minutes ?? 150) : null;
-          const shiftSurface = useMockupLight
-            ? (night ? visual.nightSurface : visual.daySurface)
-            : (night ? colors.brandTertiary : colors.successSurface);
-          const shiftAccent = useMockupLight
-            ? (night ? visual.nightAccent : visual.dayAccent)
-            : (night ? colors.brand : colors.success);
-          const houseSurface = useMockupLight ? visual.houseSurface : colors.brandTertiary;
-          const houseAccent = useMockupLight ? visual.houseAccent : colors.brand;
           return (
             <Pressable key={s.id} testID={`agenda-shift-${s.id}`} onPress={() => router.push(`/shift/${s.id}`)} style={styles.shiftCard}>
               <View style={styles.shiftTop}>
@@ -229,11 +222,8 @@ export default function CalendarScreen() {
                 <Text style={styles.duration}>{formatHours(shiftDurationHours(s.start_time, s.end_time))}</Text>
               </View>
               <View style={styles.shiftMeta}>
-                <View style={[styles.housePill, { backgroundColor: houseSurface }]}><Icon name="home" size={13} color={houseAccent} /><Text style={[styles.houseText, { color: houseAccent }]} numberOfLines={1}>{s.house_name || "No location"}</Text></View>
-                <View style={[styles.kindPill, { backgroundColor: shiftSurface }]}>
-                  <Icon name={night ? "moon" : "sunny"} size={11} color={shiftAccent} />
-                  <Text style={[styles.kindText, { color: shiftAccent }]}>{night ? "Night" : "Day"}</Text>
-                </View>
+                <HousePill name={s.house_name || "No location"} compact />
+                <ShiftTypeBadge night={night} compact />
               </View>
               {alarm ? <View style={styles.alarmRow}><Icon name="alarm-outline" size={13} color={colors.brand} /><Text style={styles.alarmText}>Alarm {formatClockTime(alarm.time, clockFormat)}</Text></View> : null}
               <Icon name="chevron-forward" size={19} color={colors.muted} style={styles.chevron} />

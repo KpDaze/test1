@@ -18,6 +18,7 @@ import { api, House, Profile } from "@/src/api";
 import { useTheme, COLOR_THEMES, radius, type Palette, type ThemeMode, type ClockFormat, fonts, typeScale } from "@/src/theme";
 import { layoutTokens, componentTokens } from "@/src/designSystem";
 import { Pressable } from "@/src/components/FeedbackPressable";
+import { SectionHeader } from "@/src/components/ShiftMateUI";
 import { fmtDMY, todayIso as tIso } from "@/src/timeUtils";
 import InlineDatePicker from "@/src/components/InlineDatePicker";
 import {
@@ -29,24 +30,6 @@ import {
 import { exportLocalBackup, pickAndRestoreLocalBackup } from "@/src/localBackup";
 import { storage } from "@/src/utils/storage";
 import { END_OF_CYCLE_REMINDERS_KEY, upcomingPayCycleEndDates } from "@/src/payCycleReminderState";
-
-function SectionTitle({ icon, title, subtitle, colors, styles }: {
-  icon: React.ComponentProps<typeof Icon>["name"];
-  title: string;
-  subtitle?: string;
-  colors: Palette;
-  styles: ReturnType<typeof makeStyles>;
-}) {
-  return (
-    <View style={styles.sectionHeading}>
-      <View style={styles.sectionIcon}><Icon name={icon} size={18} color={colors.brand} /></View>
-      <View style={{ flex: 1 }}>
-        <Text style={styles.sectionTitle}>{title}</Text>
-        {subtitle ? <Text style={styles.sectionSubtitle}>{subtitle}</Text> : null}
-      </View>
-    </View>
-  );
-}
 
 export default function SettingsScreen() {
   const { colors, mode, setMode, colorTheme, setColorTheme, clockFormat, setClockFormat } = useTheme();
@@ -262,7 +245,7 @@ export default function SettingsScreen() {
           <View style={{ flex: 1 }}><Text style={styles.brandSmall}>ShiftMate</Text><Text style={styles.title}>Settings</Text></View>
         </View>
 
-        <SectionTitle icon="person-outline" title="Profile" subtitle="Used to find your row when scanning rosters" colors={colors} styles={styles} />
+        <SectionHeader icon="person-outline" title="Profile" subtitle="Used to find your row when scanning rosters" />
         <View style={styles.card}>
           <Text style={styles.label}>Your name</Text>
           <View style={styles.inlineRow}>
@@ -273,14 +256,14 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        <SectionTitle icon="alarm-outline" title="Shift alarm" subtitle="Your normal alarm before each shift" colors={colors} styles={styles} />
+        <SectionHeader icon="alarm-outline" title="Shift alarm" subtitle="Your normal alarm before each shift" />
         <View style={styles.card}>
           <Text style={styles.label}>Hours before shift</Text>
           <TextInput testID="settings-lead-input" value={leadHours} onChangeText={saveLead} keyboardType="decimal-pad" style={styles.input} placeholder="2.5" placeholderTextColor={colors.muted} />
           <Text style={styles.help}>Default is 2.5 hours. Snooze remains available when the alarm rings.</Text>
         </View>
 
-        <SectionTitle icon="calendar-outline" title="Pay period" subtitle="Controls your pay-period totals and timesheet reminder dates" colors={colors} styles={styles} />
+        <SectionHeader icon="calendar-outline" title="Pay period" subtitle="Controls your pay-period totals and timesheet reminder dates" />
         <View style={styles.card}>
           <Text style={styles.label}>Payroll cycle</Text>
           <View style={styles.segmented} testID="pay-type-tabs">
@@ -327,7 +310,7 @@ export default function SettingsScreen() {
 
         <InlineDatePicker visible={showAnchorPicker} value={fortnightAnchor || tIso()} onChange={applyAnchor} onClose={() => setShowAnchorPicker(false)} />
 
-        <SectionTitle icon="shield-checkmark-outline" title="Local backup" subtitle="Keep your shifts and edit history safe" colors={colors} styles={styles} />
+        <SectionHeader icon="shield-checkmark-outline" title="Local backup" subtitle="Keep your shifts and edit history safe" />
         <View style={styles.card}>
           <Text style={styles.helpNoTop}>Backups include your profile, houses, shifts, deleted-shift history, roster scans and full edit history.</Text>
           <View style={styles.twoButtonRow}>
@@ -338,7 +321,7 @@ export default function SettingsScreen() {
           {backupStatus ? <Text style={styles.statusText}>{backupStatus}</Text> : null}
         </View>
 
-        <SectionTitle icon="home-outline" title="My houses & pay rates" subtitle="Used for roster labels and estimated pay" colors={colors} styles={styles} />
+        <SectionHeader icon="home-outline" title="My houses & pay rates" subtitle="Used for roster labels and estimated pay" />
         <View style={styles.card} testID="default-pay-rate-card">
           <Text style={styles.label}>Default hourly rate</Text>
           <View style={styles.rateRow}><Text style={styles.currency}>$</Text><TextInput testID="default-hourly-rate" value={defaultRate} onChangeText={setDefaultRate} onBlur={saveDefaultRate} keyboardType="decimal-pad" style={styles.rateInput} placeholder="Enter rate" placeholderTextColor={colors.muted} /><Text style={styles.rateSuffix}>/hr</Text></View>
@@ -376,7 +359,7 @@ export default function SettingsScreen() {
           <Pressable testID="new-house-add-btn" onPress={addHouse} style={styles.primaryWide} disabled={addingHouse || !newHouseName.trim()}>{addingHouse ? <ActivityIndicator color={colors.onBrandPrimary} /> : <Text style={styles.primaryButtonText}>Add house</Text>}</Pressable>
         </View>
 
-        <SectionTitle icon="color-palette-outline" title="Appearance" subtitle="Colour, light/dark mode and clock format" colors={colors} styles={styles} />
+        <SectionHeader icon="color-palette-outline" title="Appearance" subtitle="Colour, light/dark mode and clock format" />
         <View style={styles.card}>
           <Text style={styles.label}>Colour theme</Text>
           <View style={styles.themeGrid} testID="colour-theme-picker">

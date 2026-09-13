@@ -16,6 +16,7 @@ import { api, Shift, Profile, House } from "@/src/api";
 import { fonts, typeScale, type Palette } from "@/src/theme";
 import { useDesignSystem, layoutTokens, componentTokens } from "@/src/designSystem";
 import { Pressable } from "@/src/components/FeedbackPressable";
+import { ShiftTypeBadge, HousePill } from "@/src/components/ShiftMateUI";
 import { alarmClockTime, formatClockTime, fmtDMY, todayIso } from "@/src/timeUtils";
 import {
   earningsFor,
@@ -169,12 +170,7 @@ export default function Dashboard() {
   const exactOnAccent = visual.onAccent;
   const changedPositive = visual.dayAccent;
   const changedNegative = visual.danger;
-  const daySurface = visual.daySurface;
-  const dayAccent = visual.dayAccent;
-  const nightSurface = visual.nightSurface;
   const nightAccent = visual.nightAccent;
-  const houseSurface = visual.houseSurface;
-  const houseAccent = visual.houseAccent;
   const railDayAccent = visual.accent;
   const quoteIconColor = visual.accentMid;
 
@@ -354,21 +350,13 @@ export default function Dashboard() {
                         <Text allowFontScaling={false} style={styles.shiftTime} numberOfLines={1}>
                           {formatClockTime(shift.start_time, clockFormat)} – {formatClockTime(shift.end_time, clockFormat)}
                         </Text>
-                        <View style={[styles.shiftTypeBadge, { backgroundColor: night ? nightSurface : daySurface }]}>
-                          <Icon name={night ? "moon" : "sunny"} size={styles.iconBadge.width as number} color={night ? nightAccent : dayAccent} />
-                          <Text allowFontScaling={false} style={[styles.shiftTypeText, { color: night ? nightAccent : dayAccent }]} numberOfLines={1}>
-                            {night ? "Night shift" : "Day shift"}
-                          </Text>
-                        </View>
+                        <ShiftTypeBadge night={night} />
                       </View>
                       <Text allowFontScaling={false} style={styles.duration}>{formatHours(duration)}</Text>
                     </View>
 
                     <View style={styles.houseRow}>
-                      <View style={[styles.housePill, { backgroundColor: houseSurface }]}>
-                        <Icon name="home" size={styles.iconHouse.width as number} color={houseAccent} />
-                        <Text allowFontScaling={false} style={[styles.houseText, { color: houseAccent }]} numberOfLines={1}>{houseName}</Text>
-                      </View>
+                      <HousePill name={houseName} />
                     </View>
 
                     {metadata || delta !== 0 ? (
