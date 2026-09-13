@@ -60,15 +60,15 @@ export default function Onboarding() {
           {step === 0 ? (
             <>
               <Text style={styles.label}>Name as it appears on the roster</Text>
-              <TextInput testID="onboarding-name-input" value={name} onChangeText={setName} placeholder="e.g. Jamie Smith" placeholderTextColor={colors.muted} style={styles.input} autoFocus returnKeyType="next" />
+              <TextInput testID="onboarding-name-input" value={name} onChangeText={setName} placeholder="Roster name" placeholderTextColor={colors.muted} style={styles.input} autoFocus returnKeyType="next" />
               <Pressable testID="onboarding-next-btn" disabled={!name.trim()} onPress={() => setStep(1)} style={[styles.primaryButton, !name.trim() && styles.disabled]}><Text style={styles.primaryText}>Continue</Text><Icon name="arrow-forward" size={17} color={colors.onBrandPrimary} /></Pressable>
             </>
           ) : (
             <>
               <Text style={styles.label}>House name</Text>
-              <TextInput testID="onboarding-house-name-input" value={houseName} onChangeText={setHouseName} placeholder="e.g. Riverdale House" placeholderTextColor={colors.muted} style={styles.input} autoFocus />
+              <TextInput testID="onboarding-house-name-input" value={houseName} onChangeText={setHouseName} placeholder="Workplace name" placeholderTextColor={colors.muted} style={styles.input} autoFocus />
               <Text style={[styles.label, { marginTop: 14 }]}>Address <Text style={styles.optional}>(optional)</Text></Text>
-              <TextInput testID="onboarding-house-address-input" value={houseAddress} onChangeText={setHouseAddress} placeholder="12 Example St" placeholderTextColor={colors.muted} style={styles.input} />
+              <TextInput testID="onboarding-house-address-input" value={houseAddress} onChangeText={setHouseAddress} placeholder="Workplace address" placeholderTextColor={colors.muted} style={styles.input} />
               <Pressable testID="onboarding-finish-btn" disabled={!houseName.trim() || saving} onPress={finish} style={[styles.primaryButton, (!houseName.trim() || saving) && styles.disabled]}>{saving ? <ActivityIndicator color={colors.onBrandPrimary} /> : <><Text style={styles.primaryText}>Get started</Text><Icon name="checkmark" size={18} color={colors.onBrandPrimary} /></>}</Pressable>
               <Pressable testID="onboarding-back-btn" onPress={() => setStep(0)} style={styles.backButton}><Icon name="chevron-back" size={15} color={colors.brand} /><Text style={styles.backText}>Back</Text></Pressable>
             </>
