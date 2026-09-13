@@ -6,6 +6,27 @@ import { componentTokens, useDesignSystem } from "@/src/designSystem";
 
 type IconName = React.ComponentProps<typeof Icon>["name"];
 
+export function BrandScreenHeader({ title, subtitle, trailing }: {
+  title: string;
+  subtitle?: string;
+  trailing?: React.ReactNode;
+}) {
+  const { visual } = useDesignSystem();
+  return (
+    <View style={styles.brandHeader}>
+      <View style={[styles.brandMark, { backgroundColor: visual.accent }]}>
+        <Icon name="heart" size={22} color={visual.onAccent} />
+      </View>
+      <View style={styles.brandHeaderText}>
+        <Text allowFontScaling={false} style={[styles.brandEyebrow, { color: visual.accent }]}>ShiftMate</Text>
+        <Text allowFontScaling={false} style={[styles.screenTitle, { color: visual.text }]}>{title}</Text>
+        {subtitle ? <Text style={[styles.screenSubtitle, { color: visual.muted }]}>{subtitle}</Text> : null}
+      </View>
+      {trailing ? <View style={styles.brandTrailing}>{trailing}</View> : null}
+    </View>
+  );
+}
+
 export function SurfaceCard({ children, compact = false, style }: {
   children: React.ReactNode;
   compact?: boolean;
@@ -85,6 +106,36 @@ export function HousePill({ name, compact = false, style }: {
 }
 
 const styles = StyleSheet.create({
+  brandHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    minHeight: componentTokens.brandMarkSize,
+    marginBottom: 20,
+  },
+  brandMark: {
+    width: componentTokens.brandMarkSize,
+    height: componentTokens.brandMarkSize,
+    borderRadius: componentTokens.compactCardRadius,
+    alignItems: "center",
+    justifyContent: "center",
+    transform: [{ rotate: "-8deg" }],
+    marginRight: 11,
+  },
+  brandHeaderText: { flex: 1, minWidth: 0 },
+  brandEyebrow: {
+    fontFamily: fonts.textBold,
+    ...typeScale.eyebrow,
+  },
+  screenTitle: {
+    fontFamily: fonts.displayBold,
+    ...typeScale.screenTitle,
+  },
+  screenSubtitle: {
+    fontFamily: fonts.text,
+    ...typeScale.bodySmall,
+    marginTop: 2,
+  },
+  brandTrailing: { marginLeft: 10, alignItems: "flex-end", justifyContent: "center" },
   surfaceCard: {
     borderWidth: 1,
     padding: componentTokens.cardPadding,
