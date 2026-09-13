@@ -14,7 +14,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icon from "@react-native-vector-icons/ionicons";
 import { api, Shift, Profile, House } from "@/src/api";
 import { fonts, typeScale, type Palette } from "@/src/theme";
-import { useDesignSystem } from "@/src/designSystem";
+import { useDesignSystem, layoutTokens, componentTokens } from "@/src/designSystem";
 import { Pressable } from "@/src/components/FeedbackPressable";
 import { alarmClockTime, formatClockTime, fmtDMY, todayIso } from "@/src/timeUtils";
 import {
@@ -606,7 +606,7 @@ function makeStyles(colors: Palette, visual: ReturnType<typeof useDesignSystem>[
     iconCardChevron: { width: 20 },
 
     listLoader: { marginTop: 20 },
-    emptyCard: { backgroundColor: card, borderWidth: 1, borderColor: border, borderRadius: 16, padding: 20, alignItems: "center" },
+    emptyCard: {  backgroundColor: card, borderWidth: 1, borderColor: border, borderRadius: componentTokens.cardRadius, padding: 20, alignItems: "center"  },
     iconEmpty: { width: 30 },
     emptyTitle: { color: text, fontFamily: fonts.textBold, fontSize: 16, lineHeight: 20, fontWeight: "800", marginTop: 7 },
     emptyText: { color: muted, fontFamily: fonts.text, ...typeScale.bodySmall, textAlign: "center", marginTop: 4 },

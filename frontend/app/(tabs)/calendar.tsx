@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icon from "@react-native-vector-icons/ionicons";
 import { api, Shift, Profile } from "@/src/api";
 import { spacing, radius, type Palette, fonts, typeScale } from "@/src/theme";
-import { useDesignSystem } from "@/src/designSystem";
+import { useDesignSystem, layoutTokens, componentTokens } from "@/src/designSystem";
 import { Pressable } from "@/src/components/FeedbackPressable";
 import { alarmClockTime, formatClockTime, fmtDMY, fmtWeekday } from "@/src/timeUtils";
 import { rangeFor, shiftDurationHours, formatHours } from "@/src/shiftUtils";
@@ -134,7 +134,7 @@ export default function CalendarScreen() {
   return (
     <View style={styles.root}>
       <ScrollView
-        contentContainerStyle={{ paddingTop: insets.top + 10, paddingHorizontal: 20, paddingBottom: insets.bottom + 90 }}
+        contentContainerStyle={{ paddingTop: insets.top + 10, paddingHorizontal: layoutTokens.screenPadding, paddingBottom: insets.bottom + 90 }}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.brandRow}>
@@ -250,11 +250,11 @@ function makeStyles(colors: Palette) {
     root: { flex: 1, backgroundColor: colors.surface },
     brandRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 18 },
     brandLockup: { flexDirection: "row", alignItems: "center", gap: 11 },
-    logoMark: { width: 44, height: 44, borderRadius: 15, backgroundColor: colors.brand, alignItems: "center", justifyContent: "center", transform: [{ rotate: "-8deg" }] },
+    logoMark: {  width: componentTokens.brandMarkSize, height: componentTokens.brandMarkSize, borderRadius: componentTokens.compactCardRadius, backgroundColor: colors.brand, alignItems: "center", justifyContent: "center", transform: [{ rotate: "-8deg" }]  },
     brandSmall: { fontFamily: fonts.textBold, ...typeScale.eyebrow, color: colors.brand },
     screenTitle: { fontFamily: fonts.displayBold, ...typeScale.screenTitle, color: colors.onSurface },
     addCircle: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.brand, alignItems: "center", justifyContent: "center" },
-    calendarCard: { backgroundColor: colors.surfaceSecondary, borderWidth: 1, borderColor: colors.border, borderRadius: 20, padding: 15, marginBottom: 22 },
+    calendarCard: {  backgroundColor: colors.surfaceSecondary, borderWidth: 1, borderColor: colors.border, borderRadius: componentTokens.cardRadius, padding: 15, marginBottom: 22  },
     monthHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 15 },
     monthArrow: { width: 38, height: 38, borderRadius: 19, backgroundColor: colors.brandTertiary, alignItems: "center", justifyContent: "center" },
     monthTitleBlock: { alignItems: "center" },
@@ -276,19 +276,19 @@ function makeStyles(colors: Palette) {
     selectedDate: { fontFamily: fonts.text, ...typeScale.bodySmall, color: colors.muted, marginTop: 1 },
     countPill: { backgroundColor: colors.brandTertiary, paddingHorizontal: 10, paddingVertical: 6, borderRadius: radius.pill },
     countText: { fontFamily: fonts.textBold, ...typeScale.label, color: colors.onBrandTertiary },
-    fortnightCard: { flexDirection: "row", alignItems: "center", gap: 11, backgroundColor: colors.surfaceSecondary, borderWidth: 1, borderColor: colors.border, borderRadius: 16, padding: 13, marginBottom: 12 },
+    fortnightCard: {  flexDirection: "row", alignItems: "center", gap: 11, backgroundColor: colors.surfaceSecondary, borderWidth: 1, borderColor: colors.border, borderRadius: componentTokens.compactCardRadius, padding: 13, marginBottom: 12  },
     fortnightIcon: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.brandTertiary, alignItems: "center", justifyContent: "center" },
     fortnightLabel: { fontFamily: fonts.textBold, ...typeScale.eyebrow, color: colors.brand },
     fortnightRange: { fontFamily: fonts.textBold, ...typeScale.itemTitle, color: colors.onSurface, marginTop: 2 },
     fortnightHint: { fontFamily: fonts.text, ...typeScale.caption, color: colors.muted, marginTop: 2 },
     deleteButton: { width: 38, height: 38, borderRadius: 19, backgroundColor: colors.errorSurface, alignItems: "center", justifyContent: "center" },
-    emptyCard: { backgroundColor: colors.surfaceSecondary, borderWidth: 1, borderColor: colors.border, borderRadius: 18, padding: 24, alignItems: "center" },
+    emptyCard: {  backgroundColor: colors.surfaceSecondary, borderWidth: 1, borderColor: colors.border, borderRadius: componentTokens.cardRadius, padding: 24, alignItems: "center"  },
     emptyIcon: { width: 48, height: 48, borderRadius: 24, backgroundColor: colors.brandTertiary, alignItems: "center", justifyContent: "center" },
     emptyTitle: { fontFamily: fonts.displayBold, ...typeScale.cardTitle, color: colors.onSurface, marginTop: 9 },
     emptyText: { fontFamily: fonts.text, ...typeScale.bodySmall, color: colors.muted, marginTop: 3 },
-    primaryButton: { flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: colors.brand, borderRadius: radius.pill, paddingHorizontal: 14, paddingVertical: 9, marginTop: 14 },
+    primaryButton: {  flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: colors.brand, borderRadius: radius.pill, paddingHorizontal: 14, paddingVertical: 9, marginTop: 14, minHeight: layoutTokens.touchTarget },
     primaryButtonText: { fontFamily: fonts.textBold, ...typeScale.action, color: colors.onBrandPrimary },
-    shiftCard: { backgroundColor: colors.surfaceSecondary, borderWidth: 1, borderColor: colors.border, borderRadius: 16, padding: 15, paddingRight: 38, marginBottom: 10, position: "relative" },
+    shiftCard: {  backgroundColor: colors.surfaceSecondary, borderWidth: 1, borderColor: colors.border, borderRadius: componentTokens.compactCardRadius, padding: 15, paddingRight: 38, marginBottom: 10, position: "relative"  },
     shiftTop: { flexDirection: "row", alignItems: "center", gap: 8 },
     shiftTime: { fontFamily: fonts.displayBold, ...typeScale.shiftTime, color: colors.onSurface },
     duration: { fontFamily: fonts.textMedium, ...typeScale.duration, color: colors.onSurfaceSecondary, marginLeft: "auto" },

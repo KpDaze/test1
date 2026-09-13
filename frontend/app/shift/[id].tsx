@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icon from "@react-native-vector-icons/ionicons";
 import { api, House, Profile, Shift } from "@/src/api";
 import { useTheme, radius, type Palette, type ClockFormat, fonts, typeScale } from "@/src/theme";
+import { layoutTokens, componentTokens } from "@/src/designSystem";
 import { Pressable } from "@/src/components/FeedbackPressable";
 import { alarmClockTime, formatClockTime, formatLeadHours, fmtDMY, parseDMY, todayIso } from "@/src/timeUtils";
 import { formatHoursDelta, totalDelta, latestEditPhase } from "@/src/shiftUtils";
@@ -205,7 +206,7 @@ export default function ShiftDetail() {
 
   return (
     <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <ScrollView contentContainerStyle={{ paddingTop: insets.top + 10, paddingHorizontal: 20, paddingBottom: insets.bottom + 120 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={{ paddingTop: insets.top + 10, paddingHorizontal: layoutTokens.screenPadding, paddingBottom: insets.bottom + 120 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         <View style={styles.headerRow}>
           <Pressable testID="shift-back-btn" onPress={() => router.back()} style={styles.roundButton}><Icon name="chevron-back" size={21} color={colors.brand} /></Pressable>
           <View style={{ flex: 1 }}><Text style={styles.brandSmall}>ShiftMate</Text><Text style={styles.title}>{isNew ? "Add shift" : "Shift details"}</Text></View>
@@ -265,14 +266,14 @@ function makeStyles(colors: Palette) {
     roundButton: { width: 42, height: 42, borderRadius: 21, alignItems: "center", justifyContent: "center", backgroundColor: colors.brandTertiary },
     brandSmall: { fontFamily: fonts.textBold, ...typeScale.eyebrow, color: colors.brand },
     title: { fontFamily: fonts.displayBold, ...typeScale.screenTitle, color: colors.onSurface },
-    summaryCard: { flexDirection: "row", alignItems: "center", gap: 11, backgroundColor: colors.surfaceSecondary, borderWidth: 1, borderColor: colors.border, borderRadius: 18, padding: 14, marginBottom: 10 },
+    summaryCard: {  flexDirection: "row", alignItems: "center", gap: 11, backgroundColor: colors.surfaceSecondary, borderWidth: 1, borderColor: colors.border, borderRadius: componentTokens.cardRadius, padding: 14, marginBottom: 10  },
     summaryIcon: { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center", backgroundColor: colors.brandTertiary },
     summaryDate: { fontFamily: fonts.textBold, ...typeScale.micro, color: colors.muted },
     summaryTime: { fontFamily: fonts.displayBold, ...typeScale.statValue, color: colors.onSurface, marginTop: 1 },
     summaryHouse: { fontFamily: fonts.textBold, ...typeScale.label, color: colors.brand, marginTop: 4 },
-    voiceCard: { flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: colors.surfaceSecondary, borderWidth: 1, borderColor: colors.border, borderRadius: 16, padding: 12, marginBottom: 10 },
+    voiceCard: {  flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: colors.surfaceSecondary, borderWidth: 1, borderColor: colors.border, borderRadius: componentTokens.compactCardRadius, padding: 12, marginBottom: 10  },
     iconCircle: { width: 38, height: 38, borderRadius: 19, backgroundColor: colors.brandTertiary, alignItems: "center", justifyContent: "center" },
-    card: { backgroundColor: colors.surfaceSecondary, borderWidth: 1, borderColor: colors.border, borderRadius: 18, padding: 15, marginBottom: 10 },
+    card: {  backgroundColor: colors.surfaceSecondary, borderWidth: 1, borderColor: colors.border, borderRadius: componentTokens.cardRadius, padding: 15, marginBottom: 10  },
     cardHeading: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 12 },
     eyebrow: { fontFamily: fonts.textBold, ...typeScale.eyebrow, color: colors.brand },
     cardTitle: { fontFamily: fonts.displayBold, ...typeScale.cardTitle, color: colors.onSurface, marginTop: 1 },
@@ -281,19 +282,19 @@ function makeStyles(colors: Palette) {
     messageText: { fontFamily: fonts.text, ...typeScale.bodySmall, color: colors.onBrandTertiary, flex: 1 },
     transcript: { fontFamily: fonts.text, ...typeScale.caption, color: colors.muted, marginHorizontal: 3, marginBottom: 8 },
     changePill: { alignSelf: "flex-start", borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 6, marginBottom: 9 },
-    selector: { flexDirection: "row", alignItems: "center", backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 12 },
+    selector: {  flexDirection: "row", alignItems: "center", backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: componentTokens.controlRadius, padding: 12  },
     selectorText: { fontFamily: fonts.displayBold, ...typeScale.shiftTime, flex: 1, color: colors.onSurface },
     timeRow: { flexDirection: "row", alignItems: "center", gap: 7 },
     fieldLabel: { fontFamily: fonts.textBold, ...typeScale.eyebrow, color: colors.muted, marginBottom: 5 },
     arrowCircle: { width: 28, height: 28, borderRadius: 14, backgroundColor: colors.brandTertiary, alignItems: "center", justifyContent: "center", marginTop: 17 },
-    timePickerButton: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 12, minHeight: 53, alignItems: "center", justifyContent: "center" },
+    timePickerButton: {  backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: componentTokens.controlRadius, minHeight: 53, alignItems: "center", justifyContent: "center"  },
     timePickerText: { fontFamily: fonts.displayBold, ...typeScale.statValue, color: colors.onSurface },
     switchInputMode: { fontFamily: fonts.textBold, ...typeScale.micro, color: colors.brand, textAlign: "right", marginTop: 4 },
     houseWrap: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
     housePill: { flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 7 },
     housePillActive: { backgroundColor: colors.brandTertiary, borderColor: colors.brand },
     houseText: { color: colors.muted, fontSize: 11, fontWeight: "700" }, houseTextActive: { color: colors.onBrandTertiary, fontWeight: "900" },
-    alarmCard: { flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: colors.surfaceSecondary, borderWidth: 1, borderColor: colors.border, borderRadius: 18, padding: 14, marginBottom: 10 },
+    alarmCard: {  flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: colors.surfaceSecondary, borderWidth: 1, borderColor: colors.border, borderRadius: componentTokens.cardRadius, padding: 14, marginBottom: 10  },
     countPill: { minWidth: 30, height: 30, borderRadius: 15, backgroundColor: colors.brandTertiary, alignItems: "center", justifyContent: "center" }, countText: { color: colors.brand, fontSize: 12, fontWeight: "900" },
     historyRow: { flexDirection: "row", gap: 9, paddingVertical: 10, borderTopWidth: 1, borderTopColor: colors.divider },
     historyDot: { width: 28, height: 28, borderRadius: 14, backgroundColor: colors.brandTertiary, alignItems: "center", justifyContent: "center" },
@@ -302,9 +303,9 @@ function makeStyles(colors: Palette) {
     historyTitle: { fontFamily: fonts.textBold, ...typeScale.micro, color: colors.onSurface },
     historyText: { fontFamily: fonts.text, ...typeScale.bodySmall, color: colors.onSurfaceSecondary, marginTop: 3 },
     historyStamp: { fontFamily: fonts.text, ...typeScale.micro, color: colors.muted, marginTop: 3 },
-    notesInput: { fontFamily: fonts.text, ...typeScale.input, minHeight: 86, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 12, color: colors.onSurface, padding: 11 },
-    footer: { position: "absolute", left: 0, right: 0, bottom: 0, backgroundColor: colors.surfaceSecondary, borderTopWidth: 1, borderTopColor: colors.border, paddingHorizontal: 20, paddingTop: 10 },
-    saveButton: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, backgroundColor: colors.brand, borderRadius: 13, paddingVertical: 13 },
+    notesInput: {  fontFamily: fonts.text, ...typeScale.input, minHeight: 86, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: componentTokens.controlRadius, color: colors.onSurface, padding: 11  },
+    footer: { position: "absolute", left: 0, right: 0, bottom: 0, backgroundColor: colors.surfaceSecondary, borderTopWidth: 1, borderTopColor: colors.border, paddingHorizontal: layoutTokens.screenPadding, paddingTop: 10 },
+    saveButton: {  flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, backgroundColor: colors.brand, borderRadius: componentTokens.controlRadius, paddingVertical: 13, minHeight: layoutTokens.touchTarget },
     saveText: { fontFamily: fonts.textBold, ...typeScale.button, color: colors.onBrandPrimary },
   });
 }

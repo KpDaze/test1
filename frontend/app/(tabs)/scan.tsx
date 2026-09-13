@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icon from "@react-native-vector-icons/ionicons";
 import { api, Profile, House, Shift } from "@/src/api";
 import { useTheme, radius, type Palette, fonts, typeScale } from "@/src/theme";
+import { layoutTokens, componentTokens } from "@/src/designSystem";
 import { Pressable } from "@/src/components/FeedbackPressable";
 import { fmtDMY, fmtWeekday, parseDMY } from "@/src/timeUtils";
 import { scheduleShiftAlarm, ensureShiftAlarmPermissions } from "@/src/notifications";
@@ -142,7 +143,7 @@ export default function ScanScreen() {
   return (
     <View style={styles.root}>
       <ScrollView
-        contentContainerStyle={{ paddingTop: insets.top + 10, paddingHorizontal: 20, paddingBottom: parsed.length ? insets.bottom + 150 : insets.bottom + 90 }}
+        contentContainerStyle={{ paddingTop: insets.top + 10, paddingHorizontal: layoutTokens.screenPadding, paddingBottom: parsed.length ? insets.bottom + 150 : insets.bottom + 90 }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
@@ -220,11 +221,11 @@ function makeStyles(colors: Palette) {
   return StyleSheet.create({
     root: { flex: 1, backgroundColor: colors.surface },
     brandRow: { flexDirection: "row", alignItems: "center", gap: 11, marginBottom: 20 },
-    logoMark: { width: 44, height: 44, borderRadius: 15, backgroundColor: colors.brand, alignItems: "center", justifyContent: "center", transform: [{ rotate: "-8deg" }] },
+    logoMark: {  width: componentTokens.brandMarkSize, height: componentTokens.brandMarkSize, borderRadius: componentTokens.compactCardRadius, backgroundColor: colors.brand, alignItems: "center", justifyContent: "center", transform: [{ rotate: "-8deg" }]  },
     brandSmall: { fontFamily: fonts.textBold, ...typeScale.eyebrow, color: colors.brand },
     title: { fontFamily: fonts.displayBold, ...typeScale.screenTitle, color: colors.onSurface },
     subtitle: { fontFamily: fonts.text, ...typeScale.bodySmall, color: colors.muted, marginTop: 2 },
-    payslipShortcut: { flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: colors.brandTertiary, borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 8 },
+    payslipShortcut: {  flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: colors.brandTertiary, borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 8, minHeight: layoutTokens.touchTarget },
     payslipShortcutText: { fontFamily: fonts.textBold, ...typeScale.action, color: colors.onBrandTertiary },
     progressCard: { flexDirection: "row", backgroundColor: colors.surfaceSecondary, borderWidth: 1, borderColor: colors.border, borderRadius: 18, padding: 12, marginBottom: 14 },
     progressItem: { flex: 1, alignItems: "center", gap: 5 },
@@ -234,22 +235,22 @@ function makeStyles(colors: Palette) {
     stepNumberActive: { color: colors.onBrandPrimary },
     stepLabel: { fontFamily: fonts.textMedium, ...typeScale.micro, color: colors.muted },
     stepLabelActive: { color: colors.onSurface, fontWeight: "900" },
-    heroCard: { backgroundColor: colors.surfaceSecondary, borderWidth: 1, borderColor: colors.border, borderRadius: 20, padding: 22, alignItems: "center" },
+    heroCard: {  backgroundColor: colors.surfaceSecondary, borderWidth: 1, borderColor: colors.border, borderRadius: componentTokens.cardRadius, padding: 22, alignItems: "center"  },
     heroIcon: { width: 58, height: 58, borderRadius: 29, backgroundColor: colors.brandTertiary, alignItems: "center", justifyContent: "center" },
     heroTitle: { fontFamily: fonts.displayBold, ...typeScale.sectionTitle, color: colors.onSurface, marginTop: 12 },
     heroText: { fontFamily: fonts.text, ...typeScale.bodySmall, color: colors.muted, textAlign: "center", marginTop: 4, marginBottom: 16 },
-    primaryAction: { width: "100%", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, backgroundColor: colors.brand, borderRadius: 13, paddingVertical: 13 },
+    primaryAction: {  width: "100%", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, backgroundColor: colors.brand, borderRadius: componentTokens.controlRadius, paddingVertical: 13, minHeight: layoutTokens.touchTarget },
     primaryActionText: { fontFamily: fonts.textBold, ...typeScale.button, color: colors.onBrandPrimary },
-    secondaryAction: { width: "100%", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, backgroundColor: colors.brandTertiary, borderRadius: 13, paddingVertical: 13, marginTop: 8 },
+    secondaryAction: {  width: "100%", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, backgroundColor: colors.brandTertiary, borderRadius: componentTokens.controlRadius, paddingVertical: 13, marginTop: 8, minHeight: layoutTokens.touchTarget },
     secondaryActionText: { fontFamily: fonts.textBold, ...typeScale.button, color: colors.onBrandTertiary },
-    imageCard: { backgroundColor: colors.surfaceSecondary, borderWidth: 1, borderColor: colors.border, borderRadius: 18, padding: 13 },
+    imageCard: {  backgroundColor: colors.surfaceSecondary, borderWidth: 1, borderColor: colors.border, borderRadius: componentTokens.compactCardRadius, padding: 13  },
     cardHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 10 },
     eyebrow: { fontFamily: fonts.textBold, ...typeScale.eyebrow, color: colors.brand },
     cardTitle: { fontFamily: fonts.displayBold, ...typeScale.cardTitle, color: colors.onSurface, marginTop: 2 },
-    changeButton: { flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: colors.brandTertiary, borderRadius: radius.pill, paddingHorizontal: 9, paddingVertical: 6 },
+    changeButton: {  flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: colors.brandTertiary, borderRadius: radius.pill, paddingHorizontal: 9, paddingVertical: 6, minHeight: layoutTokens.touchTarget },
     changeText: { fontFamily: fonts.textBold, ...typeScale.action, color: colors.onBrandTertiary },
     preview: { width: "100%", height: 200, borderRadius: 14, resizeMode: "cover" },
-    noticeCard: { flexDirection: "row", alignItems: "flex-start", gap: 9, backgroundColor: colors.brandTertiary, borderWidth: 1, borderColor: colors.brand, borderRadius: 14, padding: 12, marginTop: 10 },
+    noticeCard: {  flexDirection: "row", alignItems: "flex-start", gap: 9, backgroundColor: colors.brandTertiary, borderWidth: 1, borderColor: colors.brand, borderRadius: componentTokens.compactCardRadius, padding: 12, marginTop: 10  },
     noticeTitle: { fontFamily: fonts.textBold, ...typeScale.label, color: colors.onBrandTertiary },
     noticeText: { fontFamily: fonts.text, ...typeScale.bodySmall, color: colors.onBrandTertiary, marginTop: 1 },
     reviewHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 20, marginBottom: 10 },
@@ -257,19 +258,19 @@ function makeStyles(colors: Palette) {
     selectedPill: { flexDirection: "row", alignItems: "baseline", gap: 4, backgroundColor: colors.brandTertiary, borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 6 },
     selectedCount: { fontFamily: fonts.displayBold, ...typeScale.cardTitle, color: colors.brand },
     selectedText: { fontFamily: fonts.textBold, ...typeScale.micro, color: colors.onBrandTertiary },
-    shiftCard: { flexDirection: "row", gap: 11, backgroundColor: colors.surfaceSecondary, borderWidth: 1, borderColor: colors.border, borderRadius: 16, padding: 12, marginBottom: 9 },
+    shiftCard: {  flexDirection: "row", gap: 11, backgroundColor: colors.surfaceSecondary, borderWidth: 1, borderColor: colors.border, borderRadius: componentTokens.compactCardRadius, padding: 12, marginBottom: 9  },
     shiftCardSelected: { borderColor: colors.brand, borderWidth: 2 },
     shiftCardMuted: { opacity: 0.7 },
     selectCircle: { width: 30, height: 30, borderRadius: 15, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, alignItems: "center", justifyContent: "center" },
     selectCircleActive: { backgroundColor: colors.brand, borderColor: colors.brand },
     dateRow: { flexDirection: "row", alignItems: "center", gap: 7 },
     weekday: { fontFamily: fonts.textBold, ...typeScale.dateWeekday, color: colors.brand },
-    dateInput: { fontFamily: fonts.textMedium, ...typeScale.inputStrong, minWidth: 100, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 10, color: colors.onSurface, paddingHorizontal: 8, paddingVertical: 5, textAlign: "center" },
+    dateInput: {  fontFamily: fonts.textMedium, ...typeScale.inputStrong, minWidth: 100, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: componentTokens.controlRadius, color: colors.onSurface, paddingHorizontal: 8, paddingVertical: 5, textAlign: "center"  },
     confidencePill: { marginLeft: "auto", backgroundColor: colors.surfaceTertiary, borderRadius: radius.pill, paddingHorizontal: 7, paddingVertical: 4 },
     confidenceText: { fontFamily: fonts.textBold, ...typeScale.micro, color: colors.muted },
     fieldLabel: { fontFamily: fonts.textBold, ...typeScale.eyebrow, color: colors.muted, marginTop: 11, marginBottom: 5 },
     timeRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-    timeInput: { fontFamily: fonts.displayBold, ...typeScale.statValue, minWidth: 76, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 10, color: colors.onSurface, paddingHorizontal: 8, paddingVertical: 7, textAlign: "center" },
+    timeInput: {  fontFamily: fonts.displayBold, ...typeScale.statValue, minWidth: 76, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: componentTokens.controlRadius, color: colors.onSurface, paddingHorizontal: 8, paddingVertical: 7, textAlign: "center"  },
     invalid: { borderColor: colors.error },
     houseRow: { flexDirection: "row", flexWrap: "wrap", gap: 5 },
     housePill: { flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.pill, paddingHorizontal: 8, paddingVertical: 5 },
@@ -279,10 +280,10 @@ function makeStyles(colors: Palette) {
     nonShift: { fontFamily: fonts.textBold, ...typeScale.itemTitle, color: colors.onSurface, marginTop: 4 },
     rawText: { fontFamily: fonts.text, ...typeScale.bodySmall, color: colors.muted, marginTop: 3 },
     warningText: { fontFamily: fonts.text, ...typeScale.caption, color: colors.warning, marginTop: 3 },
-    footer: { position: "absolute", left: 0, right: 0, bottom: 0, flexDirection: "row", alignItems: "center", gap: 15, backgroundColor: colors.surfaceSecondary, borderTopWidth: 1, borderTopColor: colors.border, paddingHorizontal: 20, paddingTop: 10 },
+    footer: { position: "absolute", left: 0, right: 0, bottom: 0, flexDirection: "row", alignItems: "center", gap: 15, backgroundColor: colors.surfaceSecondary, borderTopWidth: 1, borderTopColor: colors.border, paddingHorizontal: layoutTokens.screenPadding, paddingTop: 10 },
     footerCount: { fontFamily: fonts.displayBold, ...typeScale.sectionTitle, color: colors.brand, textAlign: "center" },
     footerLabel: { fontFamily: fonts.textBold, ...typeScale.micro, color: colors.muted },
-    saveButton: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, backgroundColor: colors.brand, borderRadius: 13, paddingVertical: 13 },
+    saveButton: {  flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, backgroundColor: colors.brand, borderRadius: componentTokens.controlRadius, paddingVertical: 13, minHeight: layoutTokens.touchTarget },
     saveButtonText: { fontFamily: fonts.textBold, ...typeScale.button, color: colors.onBrandPrimary },
   });
 }

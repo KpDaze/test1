@@ -21,6 +21,11 @@ export const componentTokens = {
   avatarSize: 40,
   headerActionSize: 42,
   brandMarkSize: 44,
+  cardPadding: 16,
+  compactCardPadding: 12,
+  roomyCardPadding: 20,
+  controlHeight: 44,
+  buttonHeight: 44,
   pillRadius: radius.pill,
 } as const;
 

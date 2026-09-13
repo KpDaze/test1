@@ -5,6 +5,7 @@ import { useRouter } from "expo-router";
 import Icon from "@react-native-vector-icons/ionicons";
 import { api } from "@/src/api";
 import { useTheme, radius, type Palette, fonts, typeScale } from "@/src/theme";
+import { layoutTokens, componentTokens } from "@/src/designSystem";
 import { Pressable } from "@/src/components/FeedbackPressable";
 import { ensureNotificationPermission } from "@/src/notifications";
 
@@ -95,15 +96,15 @@ function makeStyles(colors: Palette) {
     stepText: { fontFamily: fonts.textBold, ...typeScale.eyebrow, color: colors.brand, marginBottom: 7 },
     title: { fontFamily: fonts.displayBold, ...typeScale.screenTitle, color: colors.onSurface },
     subtitle: { fontFamily: fonts.text, ...typeScale.body, color: colors.muted, marginTop: 5, marginBottom: 22 },
-    card: { backgroundColor: colors.surfaceSecondary, borderWidth: 1, borderColor: colors.border, borderRadius: 20, padding: 17 },
+    card: {  backgroundColor: colors.surfaceSecondary, borderWidth: 1, borderColor: colors.border, borderRadius: componentTokens.cardRadius, padding: 17  },
     cardHeading: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 17 },
     iconCircle: { width: 42, height: 42, borderRadius: 21, backgroundColor: colors.brandTertiary, alignItems: "center", justifyContent: "center" },
     cardEyebrow: { fontFamily: fonts.textBold, ...typeScale.eyebrow, color: colors.brand },
     cardTitle: { fontFamily: fonts.displayBold, ...typeScale.cardTitle, color: colors.onSurface, marginTop: 2 },
     label: { fontFamily: fonts.textBold, ...typeScale.label, color: colors.onSurfaceSecondary, marginBottom: 7 },
     optional: { color: colors.muted, fontWeight: "600" },
-    input: { fontFamily: fonts.text, ...typeScale.input, backgroundColor: colors.surface, color: colors.onSurface, borderWidth: 1, borderColor: colors.border, borderRadius: 13, paddingHorizontal: 13, paddingVertical: 13 },
-    primaryButton: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, backgroundColor: colors.brand, borderRadius: 13, paddingVertical: 14, marginTop: 18 },
+    input: {  fontFamily: fonts.text, ...typeScale.input, backgroundColor: colors.surface, color: colors.onSurface, borderWidth: 1, borderColor: colors.border, borderRadius: componentTokens.controlRadius, paddingHorizontal: 13, paddingVertical: 13  },
+    primaryButton: {  flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 7, backgroundColor: colors.brand, borderRadius: componentTokens.controlRadius, paddingVertical: 14, marginTop: 18, minHeight: layoutTokens.touchTarget },
     primaryText: { fontFamily: fonts.textBold, ...typeScale.button, color: colors.onBrandPrimary },
     disabled: { opacity: 0.4 },
     backButton: { flexDirection: "row", alignItems: "center", justifyContent: "center", marginTop: 13, paddingVertical: 7 },
