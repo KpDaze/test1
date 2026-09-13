@@ -19,8 +19,8 @@ jobs:
         working-directory: frontend
     steps:
       - uses: actions/checkout@v4
-      - name: Record source
-        run: echo "Building $GITHUB_SHA"
+      - name: Record current visual source
+        run: echo "Building current ShiftMate reference source $GITHUB_SHA"
         working-directory: .
       - uses: pnpm/action-setup@v4
         with:
