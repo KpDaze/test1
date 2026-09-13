@@ -1,0 +1,278 @@
+name: ShiftMate live interactive emulator
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [shiftmate-clean]
+    paths:
+      - .github/workflows/shiftmate-live-emulator.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: shiftmate-live-interactive
+  cancel-in-progress: true
+
+jobs:
+  live:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.19.0
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/package.json
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Generate Android project
+        run: pnpm exec expo prebuild --platform android --clean --no-install
+
+      - name: Build debug APK
+        run: ./gradlew assembleDebug --stacktrace --no-daemon
+        working-directory: frontend/android
+
+      - name: Build isolated sample database
+        run: |
+          python3 - <<'PY'
+          import sqlite3
+          from pathlib import Path
+          p = Path('preview-seed.db')
+          if p.exists(): p.unlink()
+          db = sqlite3.connect(p)
+          db.executescript('''
+          PRAGMA foreign_keys = ON;
+          CREATE TABLE app_meta (key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL);
+          CREATE TABLE profile (
+            id TEXT PRIMARY KEY NOT NULL CHECK (id = 'singleton'), name TEXT NOT NULL DEFAULT '',
+            default_house_id TEXT, alarm_lead_minutes INTEGER NOT NULL DEFAULT 150,
+            pay_period_type TEXT NOT NULL DEFAULT 'week', pay_week_start_dow INTEGER NOT NULL DEFAULT 1,
+            pay_fortnight_anchor TEXT, default_hourly_rate REAL NOT NULL DEFAULT 0
+          );
+          CREATE TABLE houses (
+            id TEXT PRIMARY KEY NOT NULL, name TEXT NOT NULL, address TEXT NOT NULL DEFAULT '',
+            is_default INTEGER NOT NULL DEFAULT 0, hourly_rate REAL NOT NULL DEFAULT 0,
+            created_at TEXT NOT NULL, updated_at TEXT NOT NULL
+          );
+          CREATE TABLE roster_scans (
+            id TEXT PRIMARY KEY NOT NULL, captured_at TEXT NOT NULL, original_uri TEXT,
+            image_sha256 TEXT, ocr_engine TEXT NOT NULL, parser_version INTEGER NOT NULL,
+            overall_confidence REAL, status TEXT NOT NULL, raw_ocr_json TEXT
+          );
+          CREATE TABLE shifts (
+            id TEXT PRIMARY KEY NOT NULL, date TEXT NOT NULL, start_time TEXT NOT NULL,
+            end_time TEXT NOT NULL, house_id TEXT, house_name TEXT NOT NULL DEFAULT '',
+            alarm_enabled INTEGER NOT NULL DEFAULT 1, notes TEXT NOT NULL DEFAULT '',
+            source TEXT NOT NULL DEFAULT 'manual', roster_scan_id TEXT, confidence REAL,
+            confirmation_status TEXT NOT NULL DEFAULT 'confirmed', original_date TEXT NOT NULL,
+            original_start_time TEXT NOT NULL, original_end_time TEXT NOT NULL,
+            original_house_id TEXT, original_house_name TEXT NOT NULL DEFAULT '',
+            created_at TEXT NOT NULL, updated_at TEXT NOT NULL, is_deleted INTEGER NOT NULL DEFAULT 0,
+            FOREIGN KEY (house_id) REFERENCES houses(id) ON DELETE SET NULL,
+            FOREIGN KEY (roster_scan_id) REFERENCES roster_scans(id) ON DELETE SET NULL
+          );
+          CREATE TABLE shift_changes (
+            id TEXT PRIMARY KEY NOT NULL, shift_id TEXT NOT NULL, changed_at TEXT NOT NULL,
+            change_type TEXT NOT NULL, phase TEXT NOT NULL, previous_json TEXT NOT NULL,
+            new_json TEXT NOT NULL, previous_start TEXT NOT NULL, previous_end TEXT NOT NULL,
+            new_start TEXT NOT NULL, new_end TEXT NOT NULL, hours_delta REAL NOT NULL,
+            FOREIGN KEY (shift_id) REFERENCES shifts(id) ON DELETE RESTRICT
+          );
+          CREATE INDEX idx_shifts_date ON shifts(date);
+          CREATE INDEX idx_shift_changes_shift ON shift_changes(shift_id, changed_at);
+          ''')
+          now = '2026-09-13T12:00:00.000Z'
+          db.execute("INSERT INTO app_meta VALUES ('schema_version','4')")
+          db.execute("INSERT INTO profile VALUES ('singleton','Preview','h1',150,'fortnight',1,'2026-09-07',40.0)")
+          db.executemany("INSERT INTO houses VALUES (?,?,?,?,?,?,?)", [
+            ('h1','House A','',1,40.0,now,now),
+            ('h2','House B','',0,42.0,now,now),
+          ])
+          shifts = [
+            ('s1','2026-09-14','07:00','19:00','h1','House A',1,'Residential care','manual',None,None,'confirmed','2026-09-14','08:00','19:00','h1','House A',now,now,0),
+            ('s2','2026-09-15','07:00','19:00','h1','House A',1,'Residential care','manual',None,None,'confirmed','2026-09-15','07:00','19:00','h1','House A',now,now,0),
+            ('s3','2026-09-16','19:00','07:00','h2','House B',1,'Residential care','manual',None,None,'confirmed','2026-09-16','19:00','07:00','h2','House B',now,now,0),
+            ('s4','2026-09-17','19:00','07:00','h2','House B',1,'Residential care','manual',None,None,'confirmed','2026-09-17','19:00','07:00','h2','House B',now,now,0),
+            ('s5','2026-09-18','07:00','15:00','h1','House A',1,'Residential care','manual',None,None,'confirmed','2026-09-18','07:00','15:00','h1','House A',now,now,0),
+            ('s6','2026-09-19','19:00','07:00','h2','House B',1,'Residential care','manual',None,None,'confirmed','2026-09-19','19:00','07:00','h2','House B',now,now,0),
+          ]
+          db.executemany("INSERT INTO shifts VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", shifts)
+          db.execute("INSERT INTO shift_changes VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", (
+            'c1','s1','2026-09-13T10:00:00.000Z','update','before',
+            '{"start_time":"08:00","end_time":"19:00"}',
+            '{"start_time":"07:00","end_time":"19:00"}',
+            '08:00','19:00','07:00','19:00',1.0
+          ))
+          db.commit(); db.close()
+          PY
+
+      - name: Download temporary tunnel client
+        run: |
+          curl -L --fail --retry 3 \
+            https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 \
+            -o ../cloudflared
+          chmod +x ../cloudflared
+
+      - name: Enable KVM group permissions
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+        working-directory: .
+
+      - name: Run live Android studio
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          target: google_apis
+          profile: pixel_4
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -no-snapshot-save -no-metrics -camera-back none -camera-front none
+          disable-animations: true
+          script: |
+            set -e
+            adb wait-for-device
+            adb shell wm size 941x1672
+            adb shell wm density 350
+            adb shell settings put system font_scale 1.0
+            adb shell settings put system time_12_24 24
+            adb install -r frontend/android/app/build/outputs/apk/debug/app-debug.apk
+            adb reverse tcp:8081 tcp:8081
+
+            (cd frontend && nohup pnpm exec expo start --localhost --clear > ../metro-live.log 2>&1 &)
+            for i in $(seq 1 60); do
+              if curl -fsS http://127.0.0.1:8081/status >/dev/null 2>&1; then break; fi
+              sleep 1
+            done
+
+            adb shell pm clear com.shiftmate.app || true
+            adb shell am start -W -S -n com.shiftmate.app/.MainActivity || true
+            sleep 8
+            adb shell am force-stop com.shiftmate.app
+            adb push frontend/preview-seed.db /data/local/tmp/preview-seed.db
+            adb shell run-as com.shiftmate.app mkdir -p files/SQLite
+            adb shell run-as com.shiftmate.app rm -f files/SQLite/shiftmate.db files/SQLite/shiftmate.db-wal files/SQLite/shiftmate.db-shm
+            adb shell run-as com.shiftmate.app cp /data/local/tmp/preview-seed.db files/SQLite/shiftmate.db
+            adb shell am start -W -S -n com.shiftmate.app/.MainActivity
+            sleep 6
+
+            cat > /tmp/shiftmate_live_server.py <<'PY'
+            import json, os, subprocess, threading, time
+            from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+            from urllib.parse import urlparse
+            from pathlib import Path
+
+            ROOT = Path.cwd()
+            STOP_FILE = ROOT / '.live' / 'STOP'
+            lock = threading.Lock()
+
+            PAGE = r'''<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ShiftMate Live Android</title><style>
+            :root{--bg:#071419;--panel:#0d2027;--line:#21414a;--text:#eef7f7;--accent:#41a299;--bad:#e95b5b}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}.wrap{max-width:520px;margin:0 auto;padding:10px}.bar{position:sticky;top:0;z-index:4;background:rgba(7,20,25,.96);padding:10px;border:1px solid var(--line);border-radius:14px;margin-bottom:8px}.title{font-size:15px;font-weight:900}.state{font-size:12px;color:var(--accent);margin-top:3px}.phone{background:#000;border-radius:24px;padding:5px;box-shadow:0 12px 36px rgba(0,0,0,.35)}#screen{width:100%;display:block;border-radius:19px;touch-action:none;cursor:crosshair}.controls{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:8px}button{border:0;border-radius:11px;padding:10px 6px;font-weight:850;background:#15323a;color:white}.stop{background:var(--bad)}.resume{background:#2b715f}.hint{font-size:11px;color:#9eb1b7;margin-top:8px;line-height:1.35}</style></head><body><div class="wrap"><div class="bar"><div class="title">Actual ShiftMate Android — live</div><div class="state" id="state">LIVE · tap the app to interact</div></div><div class="phone"><img id="screen" src="/screen.png"></div><div class="controls"><button onclick="cmd('/back')">Back</button><button onclick="cmd('/home')">Home</button><button onclick="cmd('/reload')">Reload</button><button class="stop" onclick="cmd('/stop')">STOP WORK</button></div><div class="controls"><button class="resume" style="grid-column:1/-1" onclick="cmd('/resume')">Resume after STOP</button></div><div class="hint">The image is the real Android emulator. It refreshes continuously. STOP WORK writes a stop signal into the staging branch; further ShiftMate repository edits must check that signal before proceeding.</div></div><script>
+            const img=document.getElementById('screen');
+            async function cmd(p,body){await fetch(p,{method:'POST',headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):'{}'});}
+            img.addEventListener('click',async e=>{const r=img.getBoundingClientRect();const x=Math.round((e.clientX-r.left)*img.naturalWidth/r.width);const y=Math.round((e.clientY-r.top)*img.naturalHeight/r.height);await cmd('/tap',{x,y});});
+            async function status(){try{const r=await fetch('/status?t='+Date.now());const s=await r.json();document.getElementById('state').textContent=(s.stopped?'STOPPED':'LIVE')+' · commit '+s.sha.slice(0,8);}catch(e){}};
+            function refresh(){const n=new Image();n.onload=()=>{img.src=n.src};n.src='/screen.png?t='+Date.now();}
+            setInterval(refresh,650);setInterval(status,1200);status();
+            </script></body></html>'''
+
+            def run(*args, timeout=10):
+                return subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=timeout)
+
+            def git_control(stop: bool):
+                with lock:
+                    run('git','pull','--rebase','origin','shiftmate-clean', timeout=30)
+                    (ROOT/'.live').mkdir(exist_ok=True)
+                    if stop:
+                        STOP_FILE.write_text(str(time.time()))
+                    else:
+                        try: STOP_FILE.unlink()
+                        except FileNotFoundError: pass
+                    run('git','config','user.name','ShiftMate Live Control')
+                    run('git','config','user.email','live-control@shiftmate.local')
+                    run('git','add','-A','.live/STOP')
+                    run('git','commit','-m',('[control] STOP ShiftMate work' if stop else '[control] RESUME ShiftMate work'))
+                    run('git','push','origin','HEAD:shiftmate-clean', timeout=30)
+
+            class H(BaseHTTPRequestHandler):
+                def send_bytes(self, code, ctype, data):
+                    self.send_response(code); self.send_header('Content-Type',ctype); self.send_header('Cache-Control','no-store'); self.end_headers(); self.wfile.write(data)
+                def do_GET(self):
+                    p=urlparse(self.path).path
+                    if p=='/': return self.send_bytes(200,'text/html; charset=utf-8',PAGE.encode())
+                    if p=='/screen.png':
+                        q=run('adb','exec-out','screencap','-p',timeout=6)
+                        return self.send_bytes(200,'image/png',q.stdout)
+                    if p=='/status':
+                        q=run('git','rev-parse','HEAD'); sha=q.stdout.decode().strip()
+                        return self.send_bytes(200,'application/json',json.dumps({'stopped':STOP_FILE.exists(),'sha':sha}).encode())
+                    return self.send_bytes(404,'text/plain',b'not found')
+                def do_POST(self):
+                    p=urlparse(self.path).path
+                    n=int(self.headers.get('Content-Length','0') or 0); raw=self.rfile.read(n) if n else b'{}'
+                    try: body=json.loads(raw or b'{}')
+                    except: body={}
+                    if p=='/tap': run('adb','shell','input','tap',str(int(body.get('x',0))),str(int(body.get('y',0)))); return self.send_bytes(200,'text/plain',b'ok')
+                    if p=='/back': run('adb','shell','input','keyevent','4'); return self.send_bytes(200,'text/plain',b'ok')
+                    if p=='/home': run('adb','shell','am','start','-W','-S','-n','com.shiftmate.app/.MainActivity'); return self.send_bytes(200,'text/plain',b'ok')
+                    if p=='/reload': run('adb','shell','input','keyevent','82'); time.sleep(.3); run('adb','shell','input','keyevent','82'); return self.send_bytes(200,'text/plain',b'ok')
+                    if p=='/stop': git_control(True); return self.send_bytes(200,'text/plain',b'stopped')
+                    if p=='/resume': git_control(False); return self.send_bytes(200,'text/plain',b'resumed')
+                    return self.send_bytes(404,'text/plain',b'not found')
+                def log_message(self, fmt, *args): pass
+
+            ThreadingHTTPServer(('127.0.0.1',8080),H).serve_forever()
+            PY
+
+            nohup python3 /tmp/shiftmate_live_server.py > live-server.log 2>&1 &
+            nohup ./cloudflared tunnel --url http://127.0.0.1:8080 --no-autoupdate > cloudflared.log 2>&1 &
+
+            LIVE_URL=''
+            for i in $(seq 1 60); do
+              LIVE_URL=$(grep -Eo 'https://[-a-z0-9]+\.trycloudflare\.com' cloudflared.log | head -1 || true)
+              [ -n "$LIVE_URL" ] && break
+              sleep 1
+            done
+            test -n "$LIVE_URL"
+            echo "Live URL: $LIVE_URL"
+
+            git config user.name 'ShiftMate Live Runner'
+            git config user.email 'live-runner@shiftmate.local'
+            git pull --rebase origin shiftmate-clean || true
+            mkdir -p .live
+            printf '%s\n' "$LIVE_URL" > .live/LIVE_URL
+            git add .live/LIVE_URL
+            git commit -m '[live] Publish current Android session URL' || true
+            git push origin HEAD:shiftmate-clean
+
+            end=$((SECONDS+4200))
+            while [ $SECONDS -lt $end ]; do
+              if [ ! -f .live/STOP ]; then
+                git pull --rebase origin shiftmate-clean >/dev/null 2>&1 || true
+              fi
+              sleep 2
+            done
