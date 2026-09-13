@@ -13,8 +13,8 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Icon from "@react-native-vector-icons/ionicons";
 import { api, Shift, Profile, House } from "@/src/api";
-import { fonts, typeScale, useTheme, type Palette } from "@/src/theme";
-import { MOCKUP_LIGHT } from "@/src/mockupPalette";
+import { fonts, typeScale, type Palette } from "@/src/theme";
+import { useDesignSystem } from "@/src/designSystem";
 import { Pressable } from "@/src/components/FeedbackPressable";
 import { alarmClockTime, formatClockTime, fmtDMY, todayIso } from "@/src/timeUtils";
 import {
@@ -98,16 +98,16 @@ function initialsFor(name?: string) {
 }
 
 export default function Dashboard() {
-  const { colors, clockFormat, colorTheme, effective } = useTheme();
+  const { colors, clockFormat, exactReference, visual, dateTiles } = useDesignSystem();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { width } = useWindowDimensions();
-  const useMockupLight = colorTheme === "teal" && effective === "light";
+  const useMockupLight = exactReference;
   const layout = useMemo<HomeLayout>(
     () => ({ compact: width < 400, veryCompact: width < 360 }),
     [width],
   );
-  const styles = useMemo(() => makeStyles(colors, useMockupLight, layout), [colors, useMockupLight, layout]);
+  const styles = useMemo(() => makeStyles(colors, visual, useMockupLight, layout), [colors, visual, useMockupLight, layout]);
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [shifts, setShifts] = useState<Shift[]>([]);
@@ -165,18 +165,18 @@ export default function Dashboard() {
   const earnings = earningsFor(rangeShifts, houses);
   const activeHouses = totals.byHouse.filter((row) => row.house !== "No location").length;
 
-  const exactAccent = useMockupLight ? MOCKUP_LIGHT.teal : colors.brand;
-  const exactOnAccent = useMockupLight ? MOCKUP_LIGHT.nearWhite : colors.onBrandPrimary;
-  const changedPositive = useMockupLight ? MOCKUP_LIGHT.dayAccent : colors.success;
-  const changedNegative = useMockupLight ? MOCKUP_LIGHT.red : colors.error;
-  const daySurface = useMockupLight ? MOCKUP_LIGHT.daySurface : colors.successSurface;
-  const dayAccent = useMockupLight ? MOCKUP_LIGHT.dayAccent : colors.success;
-  const nightSurface = useMockupLight ? MOCKUP_LIGHT.nightSurface : colors.brandTertiary;
-  const nightAccent = useMockupLight ? MOCKUP_LIGHT.nightAccent : colors.brandSecondary;
-  const houseSurface = useMockupLight ? MOCKUP_LIGHT.houseSurface : colors.brandTertiary;
-  const houseAccent = useMockupLight ? MOCKUP_LIGHT.houseAccent : colors.brand;
-  const railDayAccent = useMockupLight ? MOCKUP_LIGHT.teal : colors.brand;
-  const quoteIconColor = useMockupLight ? MOCKUP_LIGHT.tealMid : colors.brand;
+  const exactAccent = visual.accent;
+  const exactOnAccent = visual.onAccent;
+  const changedPositive = visual.dayAccent;
+  const changedNegative = visual.danger;
+  const daySurface = visual.daySurface;
+  const dayAccent = visual.dayAccent;
+  const nightSurface = visual.nightSurface;
+  const nightAccent = visual.nightAccent;
+  const houseSurface = visual.houseSurface;
+  const houseAccent = visual.houseAccent;
+  const railDayAccent = visual.accent;
+  const quoteIconColor = visual.accentMid;
 
   return (
     <View style={styles.root}>
@@ -208,7 +208,7 @@ export default function Dashboard() {
 
           <View style={styles.headerActions}>
             <Pressable testID="dashboard-reminders-btn" onPress={() => router.push("/(tabs)/settings")} style={styles.bellButton}>
-              <Icon name="notifications-outline" size={styles.iconBell.width as number} color={useMockupLight ? MOCKUP_LIGHT.navyDeep : colors.onSurfaceSecondary} />
+              <Icon name="notifications-outline" size={styles.iconBell.width as number} color={visual.textStrong} />
             </Pressable>
             <Pressable testID="dashboard-settings-btn" onPress={() => router.push("/(tabs)/settings")} style={styles.initialsCircle}>
               <Text allowFontScaling={false} style={styles.initialsText}>{initialsFor(profile?.name)}</Text>
@@ -238,7 +238,7 @@ export default function Dashboard() {
           <View style={styles.payTopRow}>
             <View style={styles.payTitleWrap}>
               <View style={styles.clockCircle}>
-                <Icon name="time-outline" size={styles.iconClock.width as number} color={useMockupLight ? MOCKUP_LIGHT.tealMid : colors.brand} />
+                <Icon name="time-outline" size={styles.iconClock.width as number} color={visual.accentMid} />
               </View>
               <View style={styles.payTitleText}>
                 <Text allowFontScaling={false} style={styles.payEyebrow}>THIS PAY PERIOD</Text>
@@ -257,7 +257,7 @@ export default function Dashboard() {
 
             <Pressable testID="dashboard-payslip-btn" onPress={() => router.push("/payslip")} style={styles.payslipBtn}>
               <Text allowFontScaling={false} style={styles.payslipBtnText}>Payslips</Text>
-              <Icon name="chevron-forward" size={styles.iconPayChevron.width as number} color={useMockupLight ? MOCKUP_LIGHT.activeTeal : colors.brand} />
+              <Icon name="chevron-forward" size={styles.iconPayChevron.width as number} color={visual.accentStrong} />
             </Pressable>
           </View>
 
@@ -290,12 +290,12 @@ export default function Dashboard() {
 
         <View style={styles.upcomingHeader}>
           <View style={styles.upcomingTitleWrap}>
-            <Icon name="calendar-outline" size={styles.iconCalendar.width as number} color={useMockupLight ? MOCKUP_LIGHT.tealMid : colors.brand} />
+            <Icon name="calendar-outline" size={styles.iconCalendar.width as number} color={visual.accentMid} />
             <Text allowFontScaling={false} style={styles.upcomingTitle}>Upcoming Shifts</Text>
           </View>
           <Pressable onPress={() => router.push("/(tabs)/calendar")} style={styles.seeAllBtn}>
             <Text allowFontScaling={false} style={styles.seeAllText}>See all</Text>
-            <Icon name="chevron-forward" size={styles.iconSeeAll.width as number} color={useMockupLight ? MOCKUP_LIGHT.activeTeal : colors.brand} />
+            <Icon name="chevron-forward" size={styles.iconSeeAll.width as number} color={visual.accentStrong} />
           </Pressable>
         </View>
 
@@ -327,6 +327,7 @@ export default function Dashboard() {
               const alarm = shift.alarm_enabled
                 ? alarmClockTime(shift.date, shift.start_time, profile?.alarm_lead_minutes ?? 150)
                 : null;
+              const dateTone = dateTiles[index % dateTiles.length];
               const note = (shift.notes || "").trim();
               const metadata = [
                 note,
@@ -335,10 +336,10 @@ export default function Dashboard() {
 
               return (
                 <View key={shift.id} style={styles.shiftRow}>
-                  <View style={styles.dateTile}>
+                  <View style={[styles.dateTile, { backgroundColor: dateTone.surface }]}>
                     <Text allowFontScaling={false} style={styles.dateDay}>{parts.day}</Text>
                     <Text allowFontScaling={false} style={styles.dateMonth}>{parts.month}</Text>
-                    <Text allowFontScaling={false} style={styles.dateWeekday}>{parts.weekday}</Text>
+                    <Text allowFontScaling={false} style={[styles.dateWeekday, { color: dateTone.accent }]}>{parts.weekday}</Text>
                   </View>
 
                   <View style={styles.railColumn}>
@@ -383,7 +384,7 @@ export default function Dashboard() {
                       </View>
                     ) : null}
 
-                    <Icon name="chevron-forward" size={styles.iconCardChevron.width as number} color={useMockupLight ? MOCKUP_LIGHT.navyDeep : colors.muted} style={styles.cardChevron} />
+                    <Icon name="chevron-forward" size={styles.iconCardChevron.width as number} color={visual.textStrong} style={styles.cardChevron} />
                   </Pressable>
                 </View>
               );
@@ -395,20 +396,19 @@ export default function Dashboard() {
   );
 }
 
-function makeStyles(colors: Palette, useMockupLight: boolean, layout: HomeLayout) {
+function makeStyles(colors: Palette, visual: ReturnType<typeof useDesignSystem>["visual"], useMockupLight: boolean, layout: HomeLayout) {
   const { compact, veryCompact } = layout;
-  const mock = useMockupLight ? MOCKUP_LIGHT : null;
-  const page = mock?.background ?? colors.surface;
-  const card = mock?.nearWhite ?? colors.surfaceSecondary;
-  const pale = mock?.coolPale ?? colors.surfaceTertiary;
-  const aqua = mock?.paleAqua ?? colors.brandTertiary;
-  const text = mock?.navy ?? colors.onSurface;
-  const deep = mock?.navyDeep ?? colors.onSurfaceSecondary;
-  const muted = mock?.muted ?? colors.muted;
-  const teal = mock?.teal ?? colors.brand;
-  const activeTeal = mock?.activeTeal ?? colors.brand;
-  const border = mock?.coolPale ?? colors.border;
-  const divider = mock?.paleBlueGrey ?? colors.divider;
+  const page = visual.page;
+  const card = visual.card;
+  const pale = visual.cardMuted;
+  const aqua = visual.accentSurface;
+  const text = visual.text;
+  const deep = visual.textStrong;
+  const muted = visual.muted;
+  const teal = visual.accent;
+  const activeTeal = visual.accentStrong;
+  const border = visual.border;
+  const divider = visual.divider;
   const screenPadding = veryCompact ? 16 : 18;
   const railNodeTop = 29;
   const railNodeSize = 11;
@@ -494,7 +494,7 @@ function makeStyles(colors: Palette, useMockupLight: boolean, layout: HomeLayout
       paddingTop: 15,
       paddingBottom: 16,
       marginBottom: 24,
-      shadowColor: useMockupLight ? MOCKUP_LIGHT.steelBlue : "#000000",
+      shadowColor: visual.steel,
       shadowOpacity: useMockupLight ? 0.08 : 0.15,
       shadowRadius: 9,
       shadowOffset: { width: 0, height: 3 },
@@ -545,7 +545,7 @@ function makeStyles(colors: Palette, useMockupLight: boolean, layout: HomeLayout
     },
     dateDay: { color: text, fontFamily: fonts.displayBold, ...typeScale.dateDay },
     dateMonth: { color: deep, fontFamily: fonts.textMedium, ...typeScale.dateMeta, letterSpacing: 0.2 },
-    dateWeekday: { color: teal, fontFamily: fonts.textBold, ...typeScale.dateWeekday, marginTop: 2 },
+    dateWeekday: { fontFamily: fonts.textBold, ...typeScale.dateWeekday, marginTop: 2 },
     railColumn: { width: compact ? 26 : 28, alignItems: "center", position: "relative" },
     railTop: { position: "absolute", top: 0, height: railCenter, width: 2, backgroundColor: divider },
     railBottom: { position: "absolute", top: railCenter, bottom: 0, width: 2, backgroundColor: divider },
@@ -562,7 +562,7 @@ function makeStyles(colors: Palette, useMockupLight: boolean, layout: HomeLayout
       paddingTop: 10,
       paddingBottom: 9,
       position: "relative",
-      shadowColor: useMockupLight ? MOCKUP_LIGHT.steelBlue : "#000000",
+      shadowColor: visual.steel,
       shadowOpacity: useMockupLight ? 0.04 : 0.1,
       shadowRadius: 4,
       shadowOffset: { width: 0, height: 1 },
@@ -612,7 +612,7 @@ function makeStyles(colors: Palette, useMockupLight: boolean, layout: HomeLayout
     emptyText: { color: muted, fontFamily: fonts.text, ...typeScale.bodySmall, textAlign: "center", marginTop: 4 },
     emptyActions: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: 8, marginTop: 13 },
     emptyPrimary: { flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: teal, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
-    emptyPrimaryText: { color: mock?.nearWhite ?? colors.onBrandPrimary, fontFamily: fonts.textMedium, ...typeScale.action },
+    emptyPrimaryText: { color: visual.onAccent, fontFamily: fonts.textMedium, ...typeScale.action },
     emptySecondary: { borderWidth: 1, borderColor: border, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 8 },
     emptySecondaryText: { color: deep, fontFamily: fonts.textMedium, ...typeScale.action },
     iconSmall: { width: 14 },
