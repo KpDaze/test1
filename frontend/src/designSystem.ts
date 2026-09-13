@@ -29,6 +29,15 @@ export const typography = {
   ...typeScale,
 } as const;
 
+// Sampled from the coloured date blocks in the user's second Home reference.
+// These are a Home-list treatment, not new app-wide warning/status meanings.
+export const referenceDateTileTones = [
+  { surface: "#E0F1FD", accent: MOCKUP_LIGHT.houseAccent },
+  { surface: "#D7F6EE", accent: MOCKUP_LIGHT.activeTeal },
+  { surface: "#EEE4FC", accent: MOCKUP_LIGHT.nightAccent },
+  { surface: "#FEE0E2", accent: MOCKUP_LIGHT.red },
+] as const;
+
 export function useDesignSystem() {
   const theme = useTheme();
   const exactReference = theme.colorTheme === "teal" && theme.effective === "light";
@@ -91,10 +100,23 @@ export function useDesignSystem() {
     } as const;
   }, [exactReference, theme.colors]);
 
+  const dateTiles = useMemo(
+    () => exactReference
+      ? referenceDateTileTones
+      : [
+          { surface: theme.colors.info + "1F", accent: theme.colors.info },
+          { surface: theme.colors.successSurface, accent: theme.colors.success },
+          { surface: theme.colors.brandTertiary, accent: theme.colors.brandSecondary },
+          { surface: theme.colors.errorSurface, accent: theme.colors.error },
+        ] as const,
+    [exactReference, theme.colors],
+  );
+
   return {
     ...theme,
     exactReference,
     visual,
+    dateTiles,
     spacing,
     radius,
     layout: layoutTokens,
