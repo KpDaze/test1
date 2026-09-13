@@ -37,7 +37,7 @@ jobs:
           arch: x86_64
           target: google_apis
           profile: pixel_4
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -no-snapshot-save -camera-back none -camera-front none
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -no-snapshot-save -no-metrics -camera-back none -camera-front none
           disable-animations: true
           script: |
             adb wait-for-device
@@ -50,7 +50,7 @@ jobs:
             adb shell am force-stop com.google.android.apps.nexuslauncher || true
             adb shell input keyevent 4 || true
             adb shell am force-stop com.shiftmate.app
-            adb shell am start -W -S -n com.shiftmate.app/.MainActivity -a android.intent.action.VIEW -d 'shiftmate:///(tabs)' 
+            adb shell am start -W -S -n com.shiftmate.app/.MainActivity -a android.intent.action.VIEW -d shiftmate:///%28tabs%29
             sleep 12
             adb shell dumpsys activity activities | grep -E 'mResumedActivity|topResumedActivity' || true
             adb exec-out screencap -p > shiftmate-home-empty.png
