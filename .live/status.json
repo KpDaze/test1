@@ -1,0 +1,20 @@
+{
+  "project": "ShiftMate",
+  "branch": "shiftmate-clean",
+  "mode": "LIVE",
+  "current_action": "Live visual tracker created. Waiting to continue the theme correction pass after the sample-data screenshot result is available.",
+  "last_result": "A dedicated execution console exists, and the sample-data screenshot workflow is already running.",
+  "next_action": "Fetch the completed screenshot artifact once requested, inspect the rendered pages, then correct the font treatment and pay-period card against the reference.",
+  "rules": [
+    "Theme/visual work only: do not alter working app behavior.",
+    "No hosted backend or remote AI/API requirement.",
+    "Sample data exists only in disposable screenshot verification.",
+    "Every repository change/test result must be reflected here before moving to the next change."
+  ],
+  "history": [
+    {
+      "event": "tracker-created",
+      "detail": "Near-real-time tracker source created for the user-facing live monitor."
+    }
+  ]
+}
