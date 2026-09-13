@@ -8,6 +8,7 @@ import { api, Profile, House, Shift } from "@/src/api";
 import { useTheme, radius, type Palette, fonts, typeScale } from "@/src/theme";
 import { layoutTokens, componentTokens } from "@/src/designSystem";
 import { Pressable } from "@/src/components/FeedbackPressable";
+import { BrandScreenHeader } from "@/src/components/ShiftMateUI";
 import { fmtDMY, fmtWeekday, parseDMY } from "@/src/timeUtils";
 import { scheduleShiftAlarm, ensureShiftAlarmPermissions } from "@/src/notifications";
 import { recognizeRosterImage } from "@/modules/shiftmate-ocr/src";
@@ -147,14 +148,16 @@ export default function ScanScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.brandRow}>
-          <View style={styles.logoMark}><Icon name="heart" size={22} color={colors.onBrandPrimary} /></View>
-          <View style={{ flex: 1 }}><Text style={styles.brandSmall}>ShiftMate</Text><Text style={styles.title}>Scan roster</Text><Text style={styles.subtitle}>Read, review and save only the shifts you want.</Text></View>
-          <Pressable testID="scan-payslip-btn" onPress={() => router.push("/payslip")} style={styles.payslipShortcut}>
-            <Icon name="receipt-outline" size={17} color={colors.brand} />
-            <Text style={styles.payslipShortcutText}>Payslip</Text>
-          </Pressable>
-        </View>
+        <BrandScreenHeader
+          title="Scan roster"
+          subtitle="Read, review and save only the shifts you want."
+          trailing={
+            <Pressable testID="scan-payslip-btn" onPress={() => router.push("/payslip")} style={styles.payslipShortcut}>
+              <Icon name="receipt-outline" size={17} color={colors.brand} />
+              <Text style={styles.payslipShortcutText}>Payslip</Text>
+            </Pressable>
+          }
+        />
 
         <View style={styles.progressCard}>
           {["Choose", "Read", "Review"].map((label, index) => {

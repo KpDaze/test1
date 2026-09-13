@@ -18,7 +18,7 @@ import { api, House, Profile } from "@/src/api";
 import { useTheme, COLOR_THEMES, radius, type Palette, type ThemeMode, type ClockFormat, fonts, typeScale } from "@/src/theme";
 import { layoutTokens, componentTokens } from "@/src/designSystem";
 import { Pressable } from "@/src/components/FeedbackPressable";
-import { SectionHeader } from "@/src/components/ShiftMateUI";
+import { BrandScreenHeader, SectionHeader } from "@/src/components/ShiftMateUI";
 import { fmtDMY, todayIso as tIso } from "@/src/timeUtils";
 import InlineDatePicker from "@/src/components/InlineDatePicker";
 import {
@@ -240,10 +240,7 @@ export default function SettingsScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.brandRow}>
-          <View style={styles.logoMark}><Icon name="heart" size={22} color={colors.onBrandPrimary} /></View>
-          <View style={{ flex: 1 }}><Text style={styles.brandSmall}>ShiftMate</Text><Text style={styles.title}>Settings</Text></View>
-        </View>
+        <BrandScreenHeader title="Settings" />
 
         <SectionHeader icon="person-outline" title="Profile" subtitle="Used to find your row when scanning rosters" />
         <View style={styles.card}>

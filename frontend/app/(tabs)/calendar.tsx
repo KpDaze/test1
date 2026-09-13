@@ -7,7 +7,7 @@ import { api, Shift, Profile } from "@/src/api";
 import { spacing, radius, type Palette, fonts, typeScale } from "@/src/theme";
 import { useDesignSystem, layoutTokens, componentTokens } from "@/src/designSystem";
 import { Pressable } from "@/src/components/FeedbackPressable";
-import { ShiftTypeBadge, HousePill } from "@/src/components/ShiftMateUI";
+import { BrandScreenHeader, ShiftTypeBadge, HousePill } from "@/src/components/ShiftMateUI";
 import { alarmClockTime, formatClockTime, fmtDMY, fmtWeekday } from "@/src/timeUtils";
 import { rangeFor, shiftDurationHours, formatHours } from "@/src/shiftUtils";
 import { cancelShiftAlarm } from "@/src/notifications";
@@ -138,18 +138,14 @@ export default function CalendarScreen() {
         contentContainerStyle={{ paddingTop: insets.top + 10, paddingHorizontal: layoutTokens.screenPadding, paddingBottom: insets.bottom + 90 }}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.brandRow}>
-          <View style={styles.brandLockup}>
-            <View style={styles.logoMark}><Icon name="heart" size={22} color={colors.onBrandPrimary} /></View>
-            <View>
-              <Text style={styles.brandSmall}>ShiftMate</Text>
-              <Text style={styles.screenTitle}>Calendar</Text>
-            </View>
-          </View>
-          <Pressable onPress={() => router.push("/shift/new?date=" + selected)} style={styles.addCircle} testID="calendar-add-shift">
-            <Icon name="add" size={24} color={colors.onBrandPrimary} />
-          </Pressable>
-        </View>
+        <BrandScreenHeader
+          title="Calendar"
+          trailing={
+            <Pressable onPress={() => router.push("/shift/new?date=" + selected)} style={styles.addCircle} testID="calendar-add-shift">
+              <Icon name="add" size={24} color={colors.onBrandPrimary} />
+            </Pressable>
+          }
+        />
 
         <View style={styles.calendarCard} {...calendarPanResponder.panHandlers} testID="calendar-swipe-area">
           <View style={styles.monthHeader}>
