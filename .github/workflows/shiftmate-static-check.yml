@@ -71,8 +71,8 @@ jobs:
                   problems.append(f'bottom navigation contains forbidden tab {forbidden}')
 
           home = Path('app/(tabs)/index.tsx').read_text()
-          if 'Payslips' not in home:
-              problems.append('Home Payslips action missing')
+          if 'dashboard-payslip-btn' not in home or 'router.push("/payslip")' not in home:
+              problems.append('Home payslip action missing')
           if 'notificationDot' in home or 'notificationBadge' in home:
               problems.append('Home contains notification-dot/badge implementation')
           if 'referenceDateTileTones' in home:
@@ -81,10 +81,11 @@ jobs:
               problems.append('Home coloured date-tile sequence not wired')
           if 'ShiftTypeBadge' not in home or 'HousePill' not in home:
               problems.append('Home shared shift primitives not wired')
-          if 'require("../../assets/shiftmate-brand.png")' not in home:
-              problems.append('Home exact ShiftMate brand asset is not wired')
-          if not Path('assets/shiftmate-brand.png').exists():
-              problems.append('ShiftMate brand asset is missing')
+          canonical_brand = 'require("../../assets/branding/shiftmate-mark-source.png")'
+          if canonical_brand not in home:
+              problems.append('Home canonical ShiftMate brand asset is not wired')
+          if not Path('assets/branding/shiftmate-mark-source.png').exists():
+              problems.append('Canonical ShiftMate brand asset is missing')
 
           design = Path('src/designSystem.ts').read_text()
           for color in ('#E0F1FD', '#D7F6EE', '#EEE4FC', '#FEE0E2'):
