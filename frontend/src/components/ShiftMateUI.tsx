@@ -77,8 +77,8 @@ export function ShiftTypeBadge({ night, compact = false }: { night: boolean; com
   const accent = night ? visual.nightAccent : visual.dayAccent;
   return (
     <View style={[styles.badge, compact && styles.badgeCompact, { backgroundColor: surface }]}>
-      <Icon name={night ? "moon" : "sunny"} size={compact ? 11 : 12} color={accent} />
-      <Text allowFontScaling={false} style={[styles.badgeText, { color: accent }]}>
+      <Icon name={night ? "moon" : "sunny"} size={compact ? 10 : 12} color={accent} />
+      <Text allowFontScaling={false} style={[styles.badgeText, compact && styles.badgeTextCompact, { color: accent }]}>
         {night ? "Night shift" : "Day shift"}
       </Text>
     </View>
@@ -93,10 +93,10 @@ export function HousePill({ name, compact = false, style }: {
   const { visual } = useDesignSystem();
   return (
     <View style={[styles.housePill, compact && styles.housePillCompact, { backgroundColor: visual.houseSurface }, style]}>
-      <Icon name="home" size={compact ? 11 : 12} color={visual.houseAccent} />
+      <Icon name="home" size={compact ? 10 : 12} color={visual.houseAccent} />
       <Text
         allowFontScaling={false}
-        style={[styles.houseText, { color: visual.houseAccent }]}
+        style={[styles.houseText, compact && styles.houseTextCompact, { color: visual.houseAccent }]}
         numberOfLines={1}
       >
         {name}
@@ -175,12 +175,18 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   badgeCompact: {
-    paddingHorizontal: 7,
-    minHeight: 22,
+    gap: 3,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    minHeight: 18,
   },
   badgeText: {
     fontFamily: fonts.textMedium,
     ...typeScale.badge,
+  },
+  badgeTextCompact: {
+    fontSize: 9.5,
+    lineHeight: 12,
   },
   housePill: {
     maxWidth: "100%",
@@ -194,12 +200,19 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   housePillCompact: {
-    borderRadius: componentTokens.pillRadius,
-    paddingHorizontal: 8,
+    gap: 3,
+    borderRadius: 7,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    minHeight: 18,
   },
   houseText: {
     fontFamily: fonts.textMedium,
     ...typeScale.house,
     flexShrink: 1,
+  },
+  houseTextCompact: {
+    fontSize: 9.5,
+    lineHeight: 12,
   },
 });
