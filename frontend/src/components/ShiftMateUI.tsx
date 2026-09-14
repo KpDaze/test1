@@ -77,7 +77,7 @@ export function ShiftTypeBadge({ night, compact = false }: { night: boolean; com
   const accent = night ? visual.nightAccent : visual.dayAccent;
   return (
     <View style={[styles.badge, compact && styles.badgeCompact, { backgroundColor: surface }]}>
-      <Icon name={night ? "moon" : "sunny"} size={compact ? 10 : 12} color={accent} />
+      <Icon name={night ? "moon" : "sunny"} size={compact ? 10 : 11} color={accent} />
       <Text allowFontScaling={false} style={[styles.badgeText, compact && styles.badgeTextCompact, { color: accent }]}>
         {night ? "Night shift" : "Day shift"}
       </Text>
@@ -93,7 +93,7 @@ export function HousePill({ name, compact = false, style }: {
   const { visual } = useDesignSystem();
   return (
     <View style={[styles.housePill, compact && styles.housePillCompact, { backgroundColor: visual.houseSurface }, style]}>
-      <Icon name="home" size={compact ? 10 : 12} color={visual.houseAccent} />
+      <Icon name="home" size={compact ? 10 : 11} color={visual.houseAccent} />
       <Text
         allowFontScaling={false}
         style={[styles.houseText, compact && styles.houseTextCompact, { color: visual.houseAccent }]}
@@ -167,22 +167,23 @@ const styles = StyleSheet.create({
   badge: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: 3,
     borderRadius: componentTokens.pillRadius,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    minHeight: 23,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    minHeight: 20,
     flexShrink: 0,
   },
   badgeCompact: {
-    gap: 3,
-    paddingHorizontal: 6,
+    paddingHorizontal: 5,
     paddingVertical: 2,
     minHeight: 18,
   },
   badgeText: {
     fontFamily: fonts.textMedium,
     ...typeScale.badge,
+    fontSize: 10,
+    lineHeight: 13,
   },
   badgeTextCompact: {
     fontSize: 9.5,
@@ -192,23 +193,23 @@ const styles = StyleSheet.create({
     maxWidth: "100%",
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
-    borderRadius: 8,
-    paddingHorizontal: 7,
-    paddingVertical: 4,
-    minHeight: 22,
-    flexShrink: 1,
-  },
-  housePillCompact: {
     gap: 3,
     borderRadius: 7,
     paddingHorizontal: 6,
+    paddingVertical: 3,
+    minHeight: 20,
+    flexShrink: 1,
+  },
+  housePillCompact: {
+    paddingHorizontal: 5,
     paddingVertical: 2,
     minHeight: 18,
   },
   houseText: {
     fontFamily: fonts.textMedium,
     ...typeScale.house,
+    fontSize: 10,
+    lineHeight: 13,
     flexShrink: 1,
   },
   houseTextCompact: {
