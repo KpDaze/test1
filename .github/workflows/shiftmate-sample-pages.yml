@@ -26,6 +26,7 @@ jobs:
           merge-multiple: true
           github-token: ${{ github.token }}
           repository: KpDaze/test1
+          run-id: 34796812357
 
       - name: Build screenshot-only local database
         run: |
