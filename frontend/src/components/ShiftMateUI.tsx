@@ -1,10 +1,12 @@
 import React from "react";
-import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from "react-native";
+import { Image, StyleSheet, Text, View, type StyleProp, type ViewStyle } from "react-native";
 import Icon from "@react-native-vector-icons/ionicons";
 import { fonts, typeScale } from "@/src/theme";
 import { componentTokens, useDesignSystem } from "@/src/designSystem";
 
 type IconName = React.ComponentProps<typeof Icon>["name"];
+
+const BRAND_MARK = require("../../assets/branding/shiftmate-mark-source.png");
 
 export function BrandScreenHeader({ title, subtitle, trailing }: {
   title: string;
@@ -14,13 +16,15 @@ export function BrandScreenHeader({ title, subtitle, trailing }: {
   const { visual } = useDesignSystem();
   return (
     <View style={styles.brandHeader}>
-      <View style={[styles.brandMark, { backgroundColor: visual.accent }]}>
-        <Icon name="heart" size={22} color={visual.onAccent} />
-      </View>
+      <Image
+        source={BRAND_MARK}
+        resizeMode="contain"
+        style={[styles.brandMark, { backgroundColor: visual.accent }]}
+      />
       <View style={styles.brandHeaderText}>
         <Text allowFontScaling={false} style={[styles.brandEyebrow, { color: visual.accent }]}>ShiftMate</Text>
         <Text allowFontScaling={false} style={[styles.screenTitle, { color: visual.text }]}>{title}</Text>
-        {subtitle ? <Text style={[styles.screenSubtitle, { color: visual.muted }]}>{subtitle}</Text> : null}
+        {subtitle ? <Text allowFontScaling={false} style={[styles.screenSubtitle, { color: visual.muted }]}>{subtitle}</Text> : null}
       </View>
       {trailing ? <View style={styles.brandTrailing}>{trailing}</View> : null}
     </View>
@@ -32,7 +36,7 @@ export function SurfaceCard({ children, compact = false, style }: {
   compact?: boolean;
   style?: StyleProp<ViewStyle>;
 }) {
-  const { visual } = useDesignSystem();
+  const { visual, exactReference } = useDesignSystem();
   return (
     <View
       style={[
@@ -41,6 +45,8 @@ export function SurfaceCard({ children, compact = false, style }: {
           backgroundColor: visual.card,
           borderColor: visual.border,
           borderRadius: compact ? componentTokens.compactCardRadius : componentTokens.cardRadius,
+          shadowColor: visual.steel,
+          shadowOpacity: exactReference ? 0.04 : 0.09,
         },
         style,
       ]}
@@ -64,7 +70,7 @@ export function SectionHeader({ icon, title, subtitle, trailing }: {
       </View>
       <View style={styles.sectionText}>
         <Text allowFontScaling={false} style={[styles.sectionTitle, { color: visual.text }]}>{title}</Text>
-        {subtitle ? <Text style={[styles.sectionSubtitle, { color: visual.muted }]}>{subtitle}</Text> : null}
+        {subtitle ? <Text allowFontScaling={false} style={[styles.sectionSubtitle, { color: visual.muted }]}>{subtitle}</Text> : null}
       </View>
       {trailing}
     </View>
@@ -110,18 +116,16 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     minHeight: componentTokens.brandMarkSize,
-    marginBottom: 20,
+    marginBottom: 18,
   },
   brandMark: {
     width: componentTokens.brandMarkSize,
     height: componentTokens.brandMarkSize,
     borderRadius: componentTokens.compactCardRadius,
-    alignItems: "center",
-    justifyContent: "center",
+    marginRight: 9,
     transform: [{ rotate: "-8deg" }],
-    marginRight: 11,
   },
-  brandHeaderText: { flex: 1, minWidth: 0 },
+  brandHeaderText: { flex: 1, minWidth: 0, justifyContent: "center" },
   brandEyebrow: {
     fontFamily: fonts.textBold,
     ...typeScale.eyebrow,
@@ -129,28 +133,32 @@ const styles = StyleSheet.create({
   screenTitle: {
     fontFamily: fonts.displayBold,
     ...typeScale.screenTitle,
+    marginTop: -1,
   },
   screenSubtitle: {
     fontFamily: fonts.text,
     ...typeScale.bodySmall,
-    marginTop: 2,
+    marginTop: 1,
   },
   brandTrailing: { marginLeft: 10, alignItems: "flex-end", justifyContent: "center" },
   surfaceCard: {
     borderWidth: 1,
     padding: componentTokens.cardPadding,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
   },
   sectionRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
-    marginTop: 14,
-    marginBottom: 9,
+    gap: 9,
+    marginTop: 13,
+    marginBottom: 8,
   },
   sectionIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -167,53 +175,48 @@ const styles = StyleSheet.create({
   badge: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 3,
+    gap: 4,
     borderRadius: componentTokens.pillRadius,
-    paddingHorizontal: 6,
+    paddingHorizontal: 7,
     paddingVertical: 3,
-    minHeight: 20,
+    minHeight: 21,
     flexShrink: 0,
   },
   badgeCompact: {
-    paddingHorizontal: 5,
+    paddingHorizontal: 6,
     paddingVertical: 2,
-    minHeight: 18,
+    minHeight: 19,
   },
   badgeText: {
     fontFamily: fonts.textMedium,
     ...typeScale.badge,
-    fontSize: 10,
-    lineHeight: 13,
   },
   badgeTextCompact: {
-    fontSize: 9.5,
-    lineHeight: 12,
+    ...typeScale.micro,
   },
   housePill: {
     maxWidth: "100%",
     flexDirection: "row",
     alignItems: "center",
-    gap: 3,
-    borderRadius: 7,
-    paddingHorizontal: 6,
+    gap: 4,
+    borderRadius: 8,
+    paddingHorizontal: 7,
     paddingVertical: 3,
-    minHeight: 20,
+    minHeight: 21,
     flexShrink: 1,
   },
   housePillCompact: {
-    paddingHorizontal: 5,
+    borderRadius: componentTokens.pillRadius,
+    paddingHorizontal: 7,
     paddingVertical: 2,
-    minHeight: 18,
+    minHeight: 19,
   },
   houseText: {
     fontFamily: fonts.textMedium,
     ...typeScale.house,
-    fontSize: 10,
-    lineHeight: 13,
     flexShrink: 1,
   },
   houseTextCompact: {
-    fontSize: 9.5,
-    lineHeight: 12,
+    ...typeScale.micro,
   },
 });
