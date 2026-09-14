@@ -217,8 +217,8 @@ export const radius = {
 } as const;
 
 export const fonts = {
-  display: Platform.select({ android: "sans-serif-condensed", default: undefined }),
-  displayBold: Platform.select({ android: "sans-serif-condensed", default: undefined }),
+  display: Platform.select({ android: "sans-serif", default: undefined }),
+  displayBold: Platform.select({ android: "sans-serif", default: undefined }),
   text: Platform.select({ android: "sans-serif", default: undefined }),
   textMedium: Platform.select({ android: "sans-serif-medium", default: undefined }),
   textBold: Platform.select({ android: "sans-serif", default: undefined }),
