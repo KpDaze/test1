@@ -120,7 +120,7 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -no-snapshot-save -no-metrics -camera-back none -camera-front none
           disable-animations: true
           script: |
-            set -euxo pipefail
+            set -eu
             mkdir -p screenshots
             adb wait-for-device
             adb shell wm size 941x1672
@@ -129,14 +129,12 @@ jobs:
             adb shell settings put system time_12_24 24
             adb install -r apk/app-release.apk
 
-            # Fresh first launch = onboarding screen.
             adb shell pm clear com.shiftmate.app || true
             adb shell am force-stop com.shiftmate.app
             adb shell am start -W -S -n com.shiftmate.app/.MainActivity
             sleep 8
             adb exec-out screencap -p > screenshots/onboarding.png
 
-            # Seed isolated screenshot data.
             adb shell am force-stop com.shiftmate.app
             adb root
             sleep 2
@@ -156,7 +154,6 @@ jobs:
               test -s "screenshots/$file"
             }
 
-            # Home via known working tab path.
             adb shell am force-stop com.shiftmate.app
             adb shell am start -W -S -n com.shiftmate.app/.MainActivity -a android.intent.action.VIEW -d shiftmate://calendar
             sleep 5
