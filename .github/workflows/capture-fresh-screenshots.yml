@@ -1,0 +1,183 @@
+name: Capture fresh ShiftMate screenshots
+
+on:
+  push:
+    branches: [shiftmate-clean]
+    paths:
+      - .github/workflows/capture-fresh-screenshots.yml
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Download fresh current-source APK artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p apk
+          curl -L --fail --retry 3 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/KpDaze/test1/actions/artifacts/10342539164/zip \
+            -o /tmp/shiftmate-apk.zip
+          unzip -q /tmp/shiftmate-apk.zip -d apk
+          find apk -maxdepth 2 -type f -print
+          test -s apk/app-release.apk
+
+      - name: Build screenshot-only sample database
+        run: |
+          python3 - <<'PY'
+          import sqlite3
+          from pathlib import Path
+          p = Path('preview-seed.db')
+          if p.exists(): p.unlink()
+          db = sqlite3.connect(p)
+          db.executescript('''
+          PRAGMA foreign_keys = ON;
+          CREATE TABLE app_meta (key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL);
+          CREATE TABLE profile (
+            id TEXT PRIMARY KEY NOT NULL CHECK (id = 'singleton'), name TEXT NOT NULL DEFAULT '',
+            default_house_id TEXT, alarm_lead_minutes INTEGER NOT NULL DEFAULT 150,
+            pay_period_type TEXT NOT NULL DEFAULT 'week', pay_week_start_dow INTEGER NOT NULL DEFAULT 1,
+            pay_fortnight_anchor TEXT, default_hourly_rate REAL NOT NULL DEFAULT 0
+          );
+          CREATE TABLE houses (
+            id TEXT PRIMARY KEY NOT NULL, name TEXT NOT NULL, address TEXT NOT NULL DEFAULT '',
+            is_default INTEGER NOT NULL DEFAULT 0, hourly_rate REAL NOT NULL DEFAULT 0,
+            created_at TEXT NOT NULL, updated_at TEXT NOT NULL
+          );
+          CREATE TABLE roster_scans (
+            id TEXT PRIMARY KEY NOT NULL, captured_at TEXT NOT NULL, original_uri TEXT,
+            image_sha256 TEXT, ocr_engine TEXT NOT NULL, parser_version INTEGER NOT NULL,
+            overall_confidence REAL, status TEXT NOT NULL, raw_ocr_json TEXT
+          );
+          CREATE TABLE shifts (
+            id TEXT PRIMARY KEY NOT NULL, date TEXT NOT NULL, start_time TEXT NOT NULL,
+            end_time TEXT NOT NULL, house_id TEXT, house_name TEXT NOT NULL DEFAULT '',
+            alarm_enabled INTEGER NOT NULL DEFAULT 1, notes TEXT NOT NULL DEFAULT '',
+            source TEXT NOT NULL DEFAULT 'manual', roster_scan_id TEXT, confidence REAL,
+            confirmation_status TEXT NOT NULL DEFAULT 'confirmed', original_date TEXT NOT NULL,
+            original_start_time TEXT NOT NULL, original_end_time TEXT NOT NULL,
+            original_house_id TEXT, original_house_name TEXT NOT NULL DEFAULT '',
+            created_at TEXT NOT NULL, updated_at TEXT NOT NULL, is_deleted INTEGER NOT NULL DEFAULT 0,
+            FOREIGN KEY (house_id) REFERENCES houses(id) ON DELETE SET NULL,
+            FOREIGN KEY (roster_scan_id) REFERENCES roster_scans(id) ON DELETE SET NULL
+          );
+          CREATE TABLE shift_changes (
+            id TEXT PRIMARY KEY NOT NULL, shift_id TEXT NOT NULL, changed_at TEXT NOT NULL,
+            change_type TEXT NOT NULL, phase TEXT NOT NULL, previous_json TEXT NOT NULL,
+            new_json TEXT NOT NULL, previous_start TEXT NOT NULL, previous_end TEXT NOT NULL,
+            new_start TEXT NOT NULL, new_end TEXT NOT NULL, hours_delta REAL NOT NULL,
+            FOREIGN KEY (shift_id) REFERENCES shifts(id) ON DELETE RESTRICT
+          );
+          CREATE INDEX idx_shifts_date ON shifts(date);
+          CREATE INDEX idx_shift_changes_shift ON shift_changes(shift_id, changed_at);
+          ''')
+          now = '2026-09-14T06:00:00.000+10:00'
+          db.execute("INSERT INTO app_meta VALUES ('schema_version','4')")
+          db.execute("INSERT INTO profile VALUES ('singleton','Preview','h1',150,'fortnight',1,'2026-09-07',40.0)")
+          db.executemany("INSERT INTO houses VALUES (?,?,?,?,?,?,?)", [
+            ('h1','House A','',1,40.0,now,now),
+            ('h2','House B','',0,42.0,now,now),
+          ])
+          shifts = [
+            ('s1','2026-09-14','07:00','19:00','h1','House A',0,'Residential care','manual',None,None,'confirmed','2026-09-14','08:00','19:00','h1','House A',now,now,0),
+            ('s2','2026-09-15','07:00','19:00','h1','House A',0,'Residential care','manual',None,None,'confirmed','2026-09-15','07:00','19:00','h1','House A',now,now,0),
+            ('s3','2026-09-16','19:00','07:00','h2','House B',0,'Residential care','manual',None,None,'confirmed','2026-09-16','19:00','07:00','h2','House B',now,now,0),
+            ('s4','2026-09-17','19:00','07:00','h2','House B',0,'Residential care','manual',None,None,'confirmed','2026-09-17','19:00','07:00','h2','House B',now,now,0),
+            ('s5','2026-09-18','07:00','15:00','h1','House A',0,'Residential care','manual',None,None,'confirmed','2026-09-18','07:00','15:00','h1','House A',now,now,0),
+            ('s6','2026-09-19','19:00','07:00','h2','House B',0,'Residential care','manual',None,None,'confirmed','2026-09-19','19:00','07:00','h2','House B',now,now,0),
+          ]
+          db.executemany("INSERT INTO shifts VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", shifts)
+          db.execute("INSERT INTO shift_changes VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", (
+            'c1','s1','2026-09-14T05:30:00.000+10:00','update','before',
+            '{"start_time":"08:00","end_time":"19:00"}',
+            '{"start_time":"07:00","end_time":"19:00"}',
+            '08:00','19:00','07:00','19:00',1.0
+          ))
+          db.commit(); db.close()
+          PY
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Boot emulator and capture every page
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          target: google_apis
+          profile: pixel_4
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -no-snapshot-save -no-metrics -camera-back none -camera-front none
+          disable-animations: true
+          script: |
+            set -euxo pipefail
+            mkdir -p screenshots
+            adb wait-for-device
+            adb shell wm size 941x1672
+            adb shell wm density 350
+            adb shell settings put system font_scale 1.0
+            adb shell settings put system time_12_24 24
+            adb install -r apk/app-release.apk
+
+            # Fresh first launch = onboarding screen.
+            adb shell pm clear com.shiftmate.app || true
+            adb shell am force-stop com.shiftmate.app
+            adb shell am start -W -S -n com.shiftmate.app/.MainActivity
+            sleep 8
+            adb exec-out screencap -p > screenshots/onboarding.png
+
+            # Seed isolated screenshot data.
+            adb shell am force-stop com.shiftmate.app
+            adb root
+            sleep 2
+            adb wait-for-device
+            adb push preview-seed.db /data/local/tmp/preview-seed.db
+            adb shell mkdir -p /data/user/0/com.shiftmate.app/files/SQLite
+            adb shell rm -f /data/user/0/com.shiftmate.app/files/SQLite/shiftmate.db /data/user/0/com.shiftmate.app/files/SQLite/shiftmate.db-wal /data/user/0/com.shiftmate.app/files/SQLite/shiftmate.db-shm
+            adb shell 'uid=$(stat -c %u /data/user/0/com.shiftmate.app); cp /data/local/tmp/preview-seed.db /data/user/0/com.shiftmate.app/files/SQLite/shiftmate.db; chown "$uid:$uid" /data/user/0/com.shiftmate.app/files/SQLite/shiftmate.db; chmod 600 /data/user/0/com.shiftmate.app/files/SQLite/shiftmate.db; restorecon -RF /data/user/0/com.shiftmate.app/files/SQLite'
+
+            capture_route() {
+              route="$1"
+              file="$2"
+              adb shell am force-stop com.shiftmate.app
+              adb shell am start -W -S -n com.shiftmate.app/.MainActivity -a android.intent.action.VIEW -d "$route"
+              sleep 5
+              adb exec-out screencap -p > "screenshots/$file"
+              test -s "screenshots/$file"
+            }
+
+            # Home via known working tab path.
+            adb shell am force-stop com.shiftmate.app
+            adb shell am start -W -S -n com.shiftmate.app/.MainActivity -a android.intent.action.VIEW -d shiftmate://calendar
+            sleep 5
+            adb shell input tap 118 1535
+            sleep 4
+            adb exec-out screencap -p > screenshots/home.png
+
+            capture_route shiftmate://calendar calendar.png
+            capture_route shiftmate://scan scan.png
+            capture_route shiftmate://settings settings.png
+            capture_route shiftmate://payslip payslip.png
+            capture_route shiftmate://shift/s1 shift-detail.png
+
+            test -s screenshots/onboarding.png
+            test -s screenshots/home.png
+            ls -lh screenshots
+
+      - name: Upload fresh screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: ShiftMate-fresh-screenshots
+          path: screenshots/*.png
+          if-no-files-found: error
+          retention-days: 3
