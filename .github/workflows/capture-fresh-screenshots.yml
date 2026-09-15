@@ -27,7 +27,6 @@ jobs:
             https://api.github.com/repos/KpDaze/test1/actions/artifacts/10342539164/zip \
             -o /tmp/shiftmate-apk.zip
           unzip -q /tmp/shiftmate-apk.zip -d apk
-          find apk -maxdepth 2 -type f -print
           test -s apk/app-release.apk
 
       - name: Build screenshot-only sample database
@@ -120,7 +119,6 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot -no-snapshot-save -no-metrics -camera-back none -camera-front none
           disable-animations: true
           script: |
-            set -eu
             mkdir -p screenshots
             adb wait-for-device
             adb shell wm size 941x1672
@@ -128,13 +126,12 @@ jobs:
             adb shell settings put system font_scale 1.0
             adb shell settings put system time_12_24 24
             adb install -r apk/app-release.apk
-
             adb shell pm clear com.shiftmate.app || true
             adb shell am force-stop com.shiftmate.app
             adb shell am start -W -S -n com.shiftmate.app/.MainActivity
             sleep 8
             adb exec-out screencap -p > screenshots/onboarding.png
-
+            test -s screenshots/onboarding.png
             adb shell am force-stop com.shiftmate.app
             adb root
             sleep 2
@@ -143,35 +140,42 @@ jobs:
             adb shell mkdir -p /data/user/0/com.shiftmate.app/files/SQLite
             adb shell rm -f /data/user/0/com.shiftmate.app/files/SQLite/shiftmate.db /data/user/0/com.shiftmate.app/files/SQLite/shiftmate.db-wal /data/user/0/com.shiftmate.app/files/SQLite/shiftmate.db-shm
             adb shell 'uid=$(stat -c %u /data/user/0/com.shiftmate.app); cp /data/local/tmp/preview-seed.db /data/user/0/com.shiftmate.app/files/SQLite/shiftmate.db; chown "$uid:$uid" /data/user/0/com.shiftmate.app/files/SQLite/shiftmate.db; chmod 600 /data/user/0/com.shiftmate.app/files/SQLite/shiftmate.db; restorecon -RF /data/user/0/com.shiftmate.app/files/SQLite'
-
-            capture_route() {
-              route="$1"
-              file="$2"
-              adb shell am force-stop com.shiftmate.app
-              adb shell am start -W -S -n com.shiftmate.app/.MainActivity -a android.intent.action.VIEW -d "$route"
-              sleep 5
-              adb exec-out screencap -p > "screenshots/$file"
-              test -s "screenshots/$file"
-            }
-
             adb shell am force-stop com.shiftmate.app
             adb shell am start -W -S -n com.shiftmate.app/.MainActivity -a android.intent.action.VIEW -d shiftmate://calendar
             sleep 5
             adb shell input tap 118 1535
             sleep 4
             adb exec-out screencap -p > screenshots/home.png
-
-            capture_route shiftmate://calendar calendar.png
-            capture_route shiftmate://scan scan.png
-            capture_route shiftmate://settings settings.png
-            capture_route shiftmate://payslip payslip.png
-            capture_route shiftmate://shift/s1 shift-detail.png
-
-            test -s screenshots/onboarding.png
             test -s screenshots/home.png
+            adb shell am force-stop com.shiftmate.app
+            adb shell am start -W -S -n com.shiftmate.app/.MainActivity -a android.intent.action.VIEW -d shiftmate://calendar
+            sleep 5
+            adb exec-out screencap -p > screenshots/calendar.png
+            test -s screenshots/calendar.png
+            adb shell am force-stop com.shiftmate.app
+            adb shell am start -W -S -n com.shiftmate.app/.MainActivity -a android.intent.action.VIEW -d shiftmate://scan
+            sleep 5
+            adb exec-out screencap -p > screenshots/scan.png
+            test -s screenshots/scan.png
+            adb shell am force-stop com.shiftmate.app
+            adb shell am start -W -S -n com.shiftmate.app/.MainActivity -a android.intent.action.VIEW -d shiftmate://settings
+            sleep 5
+            adb exec-out screencap -p > screenshots/settings.png
+            test -s screenshots/settings.png
+            adb shell am force-stop com.shiftmate.app
+            adb shell am start -W -S -n com.shiftmate.app/.MainActivity -a android.intent.action.VIEW -d shiftmate://payslip
+            sleep 5
+            adb exec-out screencap -p > screenshots/payslip.png
+            test -s screenshots/payslip.png
+            adb shell am force-stop com.shiftmate.app
+            adb shell am start -W -S -n com.shiftmate.app/.MainActivity -a android.intent.action.VIEW -d shiftmate://shift/s1
+            sleep 5
+            adb exec-out screencap -p > screenshots/shift-detail.png
+            test -s screenshots/shift-detail.png
             ls -lh screenshots
 
       - name: Upload fresh screenshots
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: ShiftMate-fresh-screenshots
