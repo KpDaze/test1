@@ -1,0 +1,24 @@
+{
+  "project": "ShiftMate",
+  "branch": "shiftmate-clean",
+  "mode": "LIVE",
+  "current_action": "Live monitor is ready. The sample-data screenshot run is still the active verification task; no extra polling is being done just to watch it.",
+  "last_result": "The user-facing live monitor was generated and connected to this status feed.",
+  "next_action": "On the next app action, update this feed before the action, perform the action, then update the feed with the result before moving on.",
+  "rules": [
+    "Theme/visual work only: do not alter working app behavior.",
+    "No hosted backend or remote AI/API requirement.",
+    "Sample data exists only in disposable screenshot verification.",
+    "Every repository change/test result must be reflected here before moving to the next change."
+  ],
+  "history": [
+    {
+      "event": "tracker-created",
+      "detail": "Near-real-time tracker source created for the user-facing live monitor."
+    },
+    {
+      "event": "monitor-ready",
+      "detail": "Live HTML monitor generated; it refreshes this feed every two seconds."
+    }
+  ]
+}
