@@ -46,7 +46,7 @@ jobs:
           """)
           now='2026-09-13T23:00:00.000+10:00'
           db.execute("INSERT INTO app_meta VALUES ('schema_version','4')")
-          db.execute("INSERT INTO profile VALUES ('singleton','Preview','h1',150,'fortnight',1,'2026-09-07',40.0)")
+          db.execute("INSERT INTO profile VALUES ('singleton','Preview','h1',150,'fortnight',1,'2026-09-21',40.0)")
           db.executemany("INSERT INTO houses VALUES (?,?,?,?,?,?,?)",[('h1','House A','',1,40.0,now,now),('h2','House B','',0,42.0,now,now)])
           shifts=[
           ('s1','2026-09-21','07:00','19:00','h1','House A',0,'Residential care','manual',None,None,'confirmed','2026-09-21','08:00','19:00','h1','House A',now,now,0),
@@ -87,7 +87,8 @@ jobs:
             sleep 2
             adb wait-for-device
             adb push preview-seed.db /data/local/tmp/preview-seed.db
-            adb shell mkdir -p /data/user/0/com.shiftmate.app/files/SQLite
+            adb shell mkdir -p screenshots
+            mkdir -p /data/user/0/com.shiftmate.app/files/SQLite
             adb shell rm -f /data/user/0/com.shiftmate.app/files/SQLite/shiftmate.db /data/user/0/com.shiftmate.app/files/SQLite/shiftmate.db-wal /data/user/0/com.shiftmate.app/files/SQLite/shiftmate.db-shm
             adb shell 'uid=$(stat -c %u /data/user/0/com.shiftmate.app); cp /data/local/tmp/preview-seed.db /data/user/0/com.shiftmate.app/files/SQLite/shiftmate.db; chown "$uid:$uid" /data/user/0/com.shiftmate.app/files/SQLite/shiftmate.db; chmod 600 /data/user/0/com.shiftmate.app/files/SQLite/shiftmate.db; restorecon -RF /data/user/0/com.shiftmate.app/files/SQLite'
             adb shell am force-stop com.shiftmate.app
@@ -95,11 +96,36 @@ jobs:
             sleep 6
             adb shell input tap 118 1535
             sleep 4
-            adb exec-out screencap -p > exact-populated-home.png
-            test -s exact-populated-home.png
+            adb exec-out screencap -p > screenshots/home.png
+            adb shell am force-stop com.shiftmate.app
+            adb shell am start -W -S -n com.shiftmate.app/.MainActivity -a android.intent.action.VIEW -d shiftmate://calendar
+            sleep 5
+            adb exec-out screencap -p > screenshots/calendar.png
+            adb shell am force-stop com.shiftmate.app
+            adb shell am start -W -S -n com.shiftmate.app/.MainActivity -a android.intent.action.VIEW -d shiftmate://scan
+            sleep 5
+            adb exec-out screencap -p > screenshots/scan.png
+            adb shell am force-stop com.shiftmate.app
+            adb shell am start -W -S -n com.shiftmate.app/.MainActivity -a android.intent.action.VIEW -d shiftmate://settings
+            sleep 5
+            adb exec-out screencap -p > screenshots/settings.png
+            adb shell am force-stop com.shiftmate.app
+            adb shell am start -W -S -n com.shiftmate.app/.MainActivity -a android.intent.action.VIEW -d shiftmate://payslip
+            sleep 5
+            adb exec-out screencap -p > screenshots/payslip.png
+            adb shell am force-stop com.shiftmate.app
+            adb shell am start -W -S -n com.shiftmate.app/.MainActivity -a android.intent.action.VIEW -d shiftmate://shift/s1
+            sleep 5
+            adb exec-out screencap -p > screenshots/shift-detail.png
+            test -s screenshots/home.png
+            test -s screenshots/calendar.png
+            test -s screenshots/scan.png
+            test -s screenshots/settings.png
+            test -s screenshots/payslip.png
+            test -s screenshots/shift-detail.png
       - uses: actions/upload-artifact@v4
         with:
-          name: exact-13-sep-populated-home
-          path: exact-populated-home.png
+          name: exact-13-sep-populated-pages
+          path: screenshots/*.png
           if-no-files-found: error
           retention-days: 3
