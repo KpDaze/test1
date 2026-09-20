@@ -87,8 +87,8 @@ jobs:
             sleep 2
             adb wait-for-device
             adb push preview-seed.db /data/local/tmp/preview-seed.db
-            adb shell mkdir -p screenshots
-            mkdir -p /data/user/0/com.shiftmate.app/files/SQLite
+            mkdir -p screenshots
+            adb shell mkdir -p /data/user/0/com.shiftmate.app/files/SQLite
             adb shell rm -f /data/user/0/com.shiftmate.app/files/SQLite/shiftmate.db /data/user/0/com.shiftmate.app/files/SQLite/shiftmate.db-wal /data/user/0/com.shiftmate.app/files/SQLite/shiftmate.db-shm
             adb shell 'uid=$(stat -c %u /data/user/0/com.shiftmate.app); cp /data/local/tmp/preview-seed.db /data/user/0/com.shiftmate.app/files/SQLite/shiftmate.db; chown "$uid:$uid" /data/user/0/com.shiftmate.app/files/SQLite/shiftmate.db; chmod 600 /data/user/0/com.shiftmate.app/files/SQLite/shiftmate.db; restorecon -RF /data/user/0/com.shiftmate.app/files/SQLite'
             adb shell am force-stop com.shiftmate.app
