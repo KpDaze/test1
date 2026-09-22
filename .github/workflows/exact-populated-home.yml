@@ -49,11 +49,11 @@ jobs:
           db.execute("INSERT INTO profile VALUES ('singleton','Preview','h1',150,'fortnight',1,'2026-09-21',40.0)")
           db.executemany("INSERT INTO houses VALUES (?,?,?,?,?,?,?)",[('h1','House A','',1,40.0,now,now),('h2','House B','',0,42.0,now,now)])
           shifts=[
-          ('s1','2026-09-21','07:00','19:00','h1','House A',0,'Residential care','manual',None,None,'confirmed','2026-09-21','08:00','19:00','h1','House A',now,now,0),
-          ('s2','2026-09-22','07:00','19:00','h1','House A',0,'Residential care','manual',None,None,'confirmed','2026-09-22','07:00','19:00','h1','House A',now,now,0),
-          ('s3','2026-09-23','19:00','07:00','h2','House B',0,'Residential care','manual',None,None,'confirmed','2026-09-23','19:00','07:00','h2','House B',now,now,0),
-          ('s4','2026-09-24','19:00','07:00','h2','House B',0,'Residential care','manual',None,None,'confirmed','2026-09-24','19:00','07:00','h2','House B',now,now,0),
-          ('s5','2026-09-25','07:00','15:00','h1','House A',0,'Residential care','manual',None,None,'confirmed','2026-09-25','07:00','15:00','h1','House A',now,now,0)]
+          ('s1','2026-09-23','07:00','19:00','h1','House A',0,'Residential care','manual',None,None,'confirmed','2026-09-23','08:00','19:00','h1','House A',now,now,0),
+          ('s2','2026-09-24','07:00','19:00','h1','House A',0,'Residential care','manual',None,None,'confirmed','2026-09-24','07:00','19:00','h1','House A',now,now,0),
+          ('s3','2026-09-25','19:00','07:00','h2','House B',0,'Residential care','manual',None,None,'confirmed','2026-09-25','19:00','07:00','h2','House B',now,now,0),
+          ('s4','2026-09-26','19:00','07:00','h2','House B',0,'Residential care','manual',None,None,'confirmed','2026-09-26','19:00','07:00','h2','House B',now,now,0),
+          ('s5','2026-09-27','07:00','15:00','h1','House A',0,'Residential care','manual',None,None,'confirmed','2026-09-27','07:00','15:00','h1','House A',now,now,0)]
           db.executemany("INSERT INTO shifts VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",shifts)
           db.execute("INSERT INTO shift_changes VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",('c1','s1',now,'update','before','{"start_time":"08:00","end_time":"19:00"}','{"start_time":"07:00","end_time":"19:00"}','08:00','19:00','07:00','19:00',1.0))
           db.commit();db.close()
@@ -80,14 +80,16 @@ jobs:
             adb shell settings put system time_12_24 24
             adb install -r frontend/android/app/build/outputs/apk/release/app-release.apk
             adb shell pm clear com.shiftmate.app || true
+            mkdir -p screenshots
             adb shell am start -W -S -n com.shiftmate.app/.MainActivity
             sleep 6
+            adb exec-out screencap -p > screenshots/01-onboarding.png
+            test -s screenshots/01-onboarding.png
             adb shell am force-stop com.shiftmate.app
             adb root
             sleep 2
             adb wait-for-device
             adb push preview-seed.db /data/local/tmp/preview-seed.db
-            mkdir -p screenshots
             adb shell mkdir -p /data/user/0/com.shiftmate.app/files/SQLite
             adb shell rm -f /data/user/0/com.shiftmate.app/files/SQLite/shiftmate.db /data/user/0/com.shiftmate.app/files/SQLite/shiftmate.db-wal /data/user/0/com.shiftmate.app/files/SQLite/shiftmate.db-shm
             adb shell 'uid=$(stat -c %u /data/user/0/com.shiftmate.app); cp /data/local/tmp/preview-seed.db /data/user/0/com.shiftmate.app/files/SQLite/shiftmate.db; chown "$uid:$uid" /data/user/0/com.shiftmate.app/files/SQLite/shiftmate.db; chmod 600 /data/user/0/com.shiftmate.app/files/SQLite/shiftmate.db; restorecon -RF /data/user/0/com.shiftmate.app/files/SQLite'
@@ -96,36 +98,36 @@ jobs:
             sleep 6
             adb shell input tap 118 1535
             sleep 4
-            adb exec-out screencap -p > screenshots/home.png
+            adb exec-out screencap -p > screenshots/02-home.png
             adb shell am force-stop com.shiftmate.app
             adb shell am start -W -S -n com.shiftmate.app/.MainActivity -a android.intent.action.VIEW -d shiftmate://calendar
             sleep 5
-            adb exec-out screencap -p > screenshots/calendar.png
+            adb exec-out screencap -p > screenshots/03-calendar.png
             adb shell am force-stop com.shiftmate.app
             adb shell am start -W -S -n com.shiftmate.app/.MainActivity -a android.intent.action.VIEW -d shiftmate://scan
             sleep 5
-            adb exec-out screencap -p > screenshots/scan.png
+            adb exec-out screencap -p > screenshots/04-scan.png
             adb shell am force-stop com.shiftmate.app
             adb shell am start -W -S -n com.shiftmate.app/.MainActivity -a android.intent.action.VIEW -d shiftmate://settings
             sleep 5
-            adb exec-out screencap -p > screenshots/settings.png
+            adb exec-out screencap -p > screenshots/05-settings.png
             adb shell am force-stop com.shiftmate.app
             adb shell am start -W -S -n com.shiftmate.app/.MainActivity -a android.intent.action.VIEW -d shiftmate://payslip
             sleep 5
-            adb exec-out screencap -p > screenshots/payslip.png
+            adb exec-out screencap -p > screenshots/06-payslip.png
             adb shell am force-stop com.shiftmate.app
             adb shell am start -W -S -n com.shiftmate.app/.MainActivity -a android.intent.action.VIEW -d shiftmate://shift/s1
             sleep 5
-            adb exec-out screencap -p > screenshots/shift-detail.png
-            test -s screenshots/home.png
-            test -s screenshots/calendar.png
-            test -s screenshots/scan.png
-            test -s screenshots/settings.png
-            test -s screenshots/payslip.png
-            test -s screenshots/shift-detail.png
+            adb exec-out screencap -p > screenshots/07-shift-detail.png
+            test -s screenshots/02-home.png
+            test -s screenshots/03-calendar.png
+            test -s screenshots/04-scan.png
+            test -s screenshots/05-settings.png
+            test -s screenshots/06-payslip.png
+            test -s screenshots/07-shift-detail.png
       - uses: actions/upload-artifact@v4
         with:
-          name: exact-13-sep-populated-pages
+          name: exact-13-sep-seven-screens
           path: screenshots/*.png
           if-no-files-found: error
           retention-days: 3
